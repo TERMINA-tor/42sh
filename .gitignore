@@ -3,3 +3,6 @@
 *.swp
 42sh
 main.c
+__pycache__
+.pytest_cache
+.clang-format
