@@ -1,0 +1,5 @@
+*.o
+*.s
+*.swp
+42sh
+main.c
