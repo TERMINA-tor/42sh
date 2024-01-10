@@ -94,7 +94,8 @@ struct token parse_input_for_tok(struct lexer *lexer)
             else
             {
                 tok->type = input_token(s);
-                tok->value = s;
+                tok->value = calloc(1, strlen(s) + 1);
+				strcpy(tok->value, s);
             }
             //if (tok->type == TOKEN_ERROR)
             //    fprintf(stderr, "Error: %s is not a valid token\n", s);
@@ -102,7 +103,7 @@ struct token parse_input_for_tok(struct lexer *lexer)
     }
     struct token result = *tok;
     free(tok);
-    free(string);
+	free(string);
     return result;
 
     error:

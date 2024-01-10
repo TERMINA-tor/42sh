@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "../src/lexer/lexer.h"
 
@@ -27,7 +28,7 @@ int main(int argc, char *argv[])
     while (token.type != TOKEN_EOF && token.type != TOKEN_ERROR)
     {
         printf("%s\n", tab[token.type]); // Use token.type instead of token.value
-
+		free(token.value);
         token = lexer_pop(lexer);
     }
 
