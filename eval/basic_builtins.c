@@ -17,6 +17,7 @@ int builtin_false()
     return 1;
 }
 
+void print_args(char **argv, bool interpret_escapes);
 // The 'echo' built-in function
 int builtin_echo(char **argv)
 {
@@ -54,6 +55,19 @@ int builtin_echo(char **argv)
     }
 
     // Print arguments
+    print_args(argv, interpret_escapes);
+
+    if (newline)
+    {
+        putchar('\n');
+    }
+
+    fflush(stdout); // Flush the output
+    return 0;
+}
+
+void print_args(char **argv, bool interpret_escapes)
+{
     while (*argv)
     {
         if (interpret_escapes)
@@ -98,12 +112,4 @@ int builtin_echo(char **argv)
         }
         argv++;
     }
-
-    if (newline)
-    {
-        putchar('\n');
-    }
-
-    fflush(stdout); // Flush the output
-    return 0;
 }
