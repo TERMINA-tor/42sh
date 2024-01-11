@@ -6,13 +6,13 @@ def test_lexer_one_word():
 
 def test_lexer_two_word():
     output = sp.run(["./eval_token", "echo abc"], capture_output=True, text=True)
-    print(output)
-    assert output.stdout == "word\nword\nEOF"
+    expected_output = "word\nword\nEOF\n"
+    assert output.stdout == expected_output
 
 def test_lexer_multiple_word():
     output = sp.run(["./eval_token", "echo salut salut salut je sais pas salut"], capture_output=True, text=True)
-    print(output)
-    assert output == "word\nword\nword\nword\nword\nword\nword\nword\nEOF"
+    expected_output = "word\nword\nword\nword\nword\nword\nword\nword\nEOF\n"
+    assert output.stdout == expected_output
 
 def test_lexer_if_else():
     output = sp.run(["./eval_token", "if true then else fi"], capture_output=True, text=True)
@@ -21,12 +21,12 @@ def test_lexer_if_else():
 
 def test_lexer_semicolon():
     output = sp.run(["./eval_token", "command1; command2"], capture_output=True, text=True)
-    expected_output = "word\nsemicolon\nword\nEOF\n"
+    expected_output = "word\n;\nword\nEOF\n"
     assert output.stdout == expected_output
 
 def test_lexer_quote():
     output = sp.run(["./eval_token", "echo 'Hello, World!'"], capture_output=True, text=True)
-    expected_output = "word\nquote\nword\nquote\nEOF\n"
+    expected_output = "word\n'\nword\n'\nEOF\n"
     assert output.stdout == expected_output
 
 def test_lexer_elif():
@@ -36,5 +36,5 @@ def test_lexer_elif():
 
 def test_lexer_apostrophe_inside_word():
     output = sp.run(["./eval_token", "echo aa'aa'"], capture_output=True, text=True)
-    expected_output = "word\nquote\nword\nquote\nEOF\n"
+    expected_output = "word\n'\nword\n'\nEOF\n"
     assert output.stdout == expected_output

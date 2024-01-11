@@ -12,10 +12,9 @@
  * input more than it needs, and only creates tokens when lexer_peek
  * or lexer_pop is called, and no token is available.
  *
- * "2 + 3" will produce 3 tokens:
- *   - TOKEN_NUMBER { .value = 2 }
- *   - TOKEN_PLUS
- *   - TOKEN_NUMBER { .value = 3 }
+ * "echo hello" will produce 3 tokens:
+ *   - TOKEN_WORD { .value = "echo" }
+ *   - TOKEN_WORD { .value = "hello" }
  */
 
 struct lexer

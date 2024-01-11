@@ -39,11 +39,43 @@ enum token_type input_token(char *c)
 
 struct lexer *lexer_new(const char *input)
 {
-    struct lexer *lex = malloc(sizeof(struct lexer));
+    struct lexer *lex = calloc(1, sizeof(struct lexer));
     if (!lex)
         return NULL;
 
-    lex->input = input;
+    int max_size = 3 * strlen(input) + 1;
+    char *new_input = calloc(max_size, sizeof(char));
+    if (!new_input)
+    {
+        free(lex);
+        return NULL;
+    }
+
+    int j = 0;
+    int in_quote = 0; // flag to check if we are inside quotes
+    for (int i = 0; input[i] != '\0'; i++)
+    {
+        if (input[i] == '\'')
+        {
+            in_quote = !in_quote; // toggle the flag
+            new_input[j++] = ' ';
+            new_input[j++] = input[i];
+            new_input[j++] = ' ';
+        }
+        else if ((input[i] == ';' || input[i] == '\n') && !in_quote)
+        {
+            new_input[j++] = ' ';
+            new_input[j++] = input[i];
+            new_input[j++] = ' ';
+        }
+        else
+        {
+            new_input[j++] = input[i];
+        }
+    }
+    new_input[j] = '\0';
+
+    lex->input = new_input;
     lex->pos = 0;
 
     return lex;
@@ -110,6 +142,7 @@ struct token parse_input_for_tok(struct lexer *lexer)
         fprintf(stderr, "Error: calloc failed\n");
         exit(1);
 }
+
 struct token lexer_peek(struct lexer *lexer)
 {
     return parse_input_for_tok(lexer);

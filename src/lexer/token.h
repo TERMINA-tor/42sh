@@ -31,6 +31,6 @@ enum ast_type
 struct token
 {
     enum token_type type; // The kind of token
-    char* value; // If the token is a number, its value
+    char* value; // its value
 };
 #endif /* !TOKEN_H */

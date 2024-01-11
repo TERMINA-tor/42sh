@@ -10,6 +10,9 @@ all: token
 
 token: $(OBJS) $(OBJ_TOKEN)
 	$(CC) -g -o eval_token $(OBJS) $(OBJ_TOKEN)
+
+test:
+	python3 -m pytest tests/test_lexer.py
 	
 $(OBJ_TOKEN):
 	$(CC) -g -c tests/token_printer.c -o $(OBJ_TOKEN)
