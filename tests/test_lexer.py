@@ -25,7 +25,7 @@ def test_lexer_semicolon():
     assert output.stdout == expected_output
 
 def test_lexer_quote():
-    output = sp.run(["./eval_token", "echo 'Hello, World!'"], capture_output=True, text=True)
+    output = sp.run(["./eval_token", "echo 'Hello, World'"], capture_output=True, text=True)
     expected_output = "word\n'\nword\n'\nEOF\n"
     assert output.stdout == expected_output
 

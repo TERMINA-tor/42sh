@@ -22,6 +22,7 @@ struct lexer
     const char *input; // The input data
     size_t pos; // The current offset inside the input data
     struct token current_tok; // The next token, if processed
+    int inside_quote; // 1 if we are inside a quote, 0 otherwise
 };
 
 /**
