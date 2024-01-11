@@ -39,43 +39,11 @@ enum token_type input_token(char *c)
 
 struct lexer *lexer_new(const char *input)
 {
-    struct lexer *lex = calloc(1, sizeof(struct lexer));
+    struct lexer *lex = malloc(sizeof(struct lexer));
     if (!lex)
         return NULL;
 
-    int max_size = 3 * strlen(input) + 1;
-    char *new_input = calloc(max_size, sizeof(char));
-    if (!new_input)
-    {
-        free(lex);
-        return NULL;
-    }
-
-    int j = 0;
-    int in_quote = 0; // flag to check if we are inside quotes
-    for (int i = 0; input[i] != '\0'; i++)
-    {
-        if (input[i] == '\'')
-        {
-            in_quote = !in_quote; // toggle the flag
-            new_input[j++] = ' ';
-            new_input[j++] = input[i];
-            new_input[j++] = ' ';
-        }
-        else if ((input[i] == ';' || input[i] == '\n') && !in_quote)
-        {
-            new_input[j++] = ' ';
-            new_input[j++] = input[i];
-            new_input[j++] = ' ';
-        }
-        else
-        {
-            new_input[j++] = input[i];
-        }
-    }
-    new_input[j] = '\0';
-
-    lex->input = new_input;
+    lex->input = input;
     lex->pos = 0;
 
     return lex;
@@ -99,44 +67,56 @@ void lexer_free(struct lexer *lexer)
 
 struct token parse_input_for_tok(struct lexer *lexer)
 {
+    while (lexer->input[lexer->pos] == ' ')
+        lexer->pos++;
+
     struct token *tok = calloc(1, sizeof(struct token));
-    char *string = NULL;
-    if (!lexer || !lexer->input)
-    {
+    if (!tok)
         goto error;
-    }
-    else
+
+    if (lexer->input[lexer->pos] == '\0')
     {
-        string = calloc(1, strlen(lexer->input) + 1);
-        if (!string)
-        {
-            free(tok);
-            goto error;
-        }
-        else
-        {
-            strcpy(string, lexer->input);
-            char *s = strtok(string, " ");
-            for (size_t i = 0; i < lexer->pos && s != NULL; i++)
-            {
-                s = strtok(NULL, " ");
-            }
-            if (s == NULL)
-                tok->type = TOKEN_EOF;
-            else
-            {
-                tok->type = input_token(s);
-                tok->value = calloc(1, strlen(s) + 1);
-				strcpy(tok->value, s);
-            }
-            //if (tok->type == TOKEN_ERROR)
-            //    fprintf(stderr, "Error: %s is not a valid token\n", s);
-        }
+        tok->type = TOKEN_EOF;
+        tok->value = NULL;
+
+        return *tok;
     }
-    struct token result = *tok;
+
+    if (lexer->input[lexer->pos] == '\n' || lexer->input[lexer->pos] == '\'' || lexer->input[lexer->pos] == ';')
+    {
+        char temp[2] = {lexer->input[lexer->pos], '\0'};
+    
+        tok->type = input_token(temp);
+        tok->value = temp;
+
+        struct token ret = *tok;
+        free(tok);
+        lexer->pos++;
+        return ret;
+    }
+
+    //loop thru input until we find a token
+    //if we find a token, return it
+
+    char *c = calloc(1, sizeof(char));
+    if (!c)
+        goto error;
+    
+    int i = 0;
+    while (lexer->input[lexer->pos] != ' ' && lexer->input[lexer->pos] != '\0' && lexer->input[lexer->pos] != '\n' && lexer->input[lexer->pos] != '\'' && lexer->input[lexer->pos] != ';')
+    {
+        c[i] = lexer->input[lexer->pos];
+        i++;
+        lexer->pos++;
+    }
+    c[i] = '\0';
+
+    tok->type = input_token(c);
+    tok->value = c;
+
+    struct token ret = *tok;
     free(tok);
-	free(string);
-    return result;
+    return ret;
 
     error:
         fprintf(stderr, "Error: calloc failed\n");
@@ -151,6 +131,5 @@ struct token lexer_peek(struct lexer *lexer)
 struct token lexer_pop(struct lexer *lexer)
 {
     struct token tok = parse_input_for_tok(lexer);
-    lexer->pos++;
     return tok;
 }
