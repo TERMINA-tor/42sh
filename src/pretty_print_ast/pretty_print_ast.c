@@ -43,7 +43,7 @@ void generate_dot(struct ast *node, FILE *file)
     }
 }
 
-void pretty_print_ast(struct ast *root)
+void pretty_print_ast(struct ast *res)
 {
     FILE *file = fopen("ast.dot", "w");
     if (file == NULL)
@@ -57,7 +57,7 @@ void pretty_print_ast(struct ast *root)
     fprintf(file, "  node [shape=box];\n");
 
     // Generate DOT content
-    generate_dot(root, file);
+    generate_dot(res, file);
 
     // End the DOT graph
     fprintf(file, "}\n");

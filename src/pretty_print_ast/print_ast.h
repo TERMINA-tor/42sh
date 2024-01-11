@@ -1,5 +1,5 @@
-#ifndef LITTLE_PRINT_AST_H
-#define LITTLE_PRINT_AST_H
+#ifndef PRINT_AST_H
+#define PRINT_AST_H
 
 #include <stdio.h>
 
@@ -11,4 +11,4 @@ void little_print_ast(struct ast *res, int depth);
 // Function prototype for pretty-printing an AST
 void pretty_print_ast(struct ast *res);
 
-#endif // LITTLE_PRINT_AST_H
+#endif // PRINT_AST_H
