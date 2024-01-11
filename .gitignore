@@ -1,3 +1,7 @@
+*.o
+*.s
+*.swp
+42sh
 __pycache__
 .pytest_cache
-.clang_format
+.clang-format
