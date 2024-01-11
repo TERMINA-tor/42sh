@@ -2,10 +2,7 @@ name: input feature test
 on:
   pull_request:
     branches:
-      - input
-  push:
-    branches:
-      -input
+      - main
 
 jobs:
   test:
