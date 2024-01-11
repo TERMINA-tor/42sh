@@ -15,7 +15,7 @@ Use the `make check` command to launch a pytest testsuite:
 
 ```bash
 make check
-This will lex various strings (if else, simple commands etc...).
+This will lex various strings (if else, simple commands etc...) and will clean what's produced.
 ```
 
 # Note
