@@ -36,5 +36,5 @@ def test_lexer_elif():
 
 def test_lexer_apostrophe_inside_word():
     output = sp.run(["./eval_token", "echo aa'aa'"], capture_output=True, text=True)
-    expected_output = "word\n'\nword\n'\nEOF\n"
+    expected_output = "word\nword\n'\nword\n'\nEOF\n"
     assert output.stdout == expected_output

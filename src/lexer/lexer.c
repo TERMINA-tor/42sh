@@ -84,7 +84,12 @@ struct token parse_input_for_tok(struct lexer *lexer)
 
     if (lexer->input[lexer->pos] == '\n' || lexer->input[lexer->pos] == '\'' || lexer->input[lexer->pos] == ';')
     {
-        char temp[2] = {lexer->input[lexer->pos], '\0'};
+        char *temp = calloc(1, sizeof(char));
+        if (!temp)
+            goto error;
+        
+        temp[0] = lexer->input[lexer->pos];
+        temp[1] = '\0';
     
         tok->type = input_token(temp);
         tok->value = temp;
@@ -103,7 +108,26 @@ struct token parse_input_for_tok(struct lexer *lexer)
         goto error;
     
     int i = 0;
-    while (lexer->input[lexer->pos] != ' ' && lexer->input[lexer->pos] != '\0' && lexer->input[lexer->pos] != '\n' && lexer->input[lexer->pos] != '\'' && lexer->input[lexer->pos] != ';')
+    // check if we are in a quote, if yes then read until the next quote and when finding the next quote, decrement the pos
+    if (lexer->input[lexer->pos - 1] == '\'')
+    {
+        lexer->pos++;
+        while (lexer->input[lexer->pos] != '\'')
+        {
+            c[i] = lexer->input[lexer->pos];
+            i++;
+            lexer->pos++;
+        }
+        c[i] = '\0';
+        tok->type = input_token(c);
+        tok->value = c;
+
+        struct token ret = *tok;
+        free(tok);
+        return ret;
+    }
+
+    while (lexer->input[lexer->pos] != ' ' && lexer->input[lexer->pos] != '\0' && lexer->input[lexer->pos] != '\n' && lexer->input[lexer->pos] != ';')
     {
         c[i] = lexer->input[lexer->pos];
         i++;
