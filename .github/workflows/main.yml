@@ -1,0 +1,36 @@
+name: input feature test
+on:
+  pull_request:
+    branches:
+      - input
+  push:
+    branches:
+      -input
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./src/input
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up compilation utils
+        run: |
+          sudo apt update
+          sudo apt install gcc
+          sudo apt install make
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+
+      - name: Install dependencies
+        run: |
+          python -m pip install  --upgrade pip
+          pip install pytest
+  
+      - name: Test Input
+        run:
+          make check
+        
