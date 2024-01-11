@@ -11,7 +11,7 @@ all: token
 token: $(OBJS) $(OBJ_TOKEN)
 	$(CC) -g -o eval_token $(OBJS) $(OBJ_TOKEN)
 
-test:
+check:
 	python3 -m pytest -vv src/lexer/tests/test_lexer.py
 	
 $(OBJ_TOKEN):

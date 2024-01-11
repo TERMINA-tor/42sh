@@ -11,10 +11,10 @@ When given exactly one argument, it will print the tokens.
 ```
 
 ## Testing
-Use the `make test` command to launch a pytest testsuite:
+Use the `make check` command to launch a pytest testsuite:
 
 ```bash
-make test
+make check
 This will lex various strings (if else, simple commands etc...).
 ```
 
