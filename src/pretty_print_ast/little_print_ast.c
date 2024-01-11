@@ -1,6 +1,4 @@
-#include "little_print_ast.h"
-
-#include <stdio.h>
+#include "print_ast.h"
 
 void little_print_ast(struct ast *res, int depth)
 {
