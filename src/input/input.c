@@ -1,6 +1,5 @@
 #include "input.h"
 
-// handles error cases
 char *input_error(char *input, FILE *fd)
 {
     free(input);
