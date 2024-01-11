@@ -1,6 +1,22 @@
-To compile:
-    make
-    => Will produce ./eval_token, which when given exactly one argument, will print the tokens.
+# Instructions
 
-NOTE:
-    will leak since char *value in token struct is calloc-ed, should be freed
+## Compilation
+
+Use the `make` command to compile the project:
+
+```bash
+make
+This will produce ./eval_token.
+When given exactly one argument, it will print the tokens.
+```
+
+## Testing
+Use the `make test` command to launch a pytest testsuite:
+
+```bash
+make test
+This will lex various strings (if else, simple commands etc...).
+```
+
+# Note
+Please be aware that there will be a memory leak since the char *value in the token struct is calloc-ed and should be freed.
