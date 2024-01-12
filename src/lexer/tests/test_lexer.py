@@ -84,6 +84,21 @@ def test_lexer_comment_inside_quote_and_outside():
     expected_output = "word\n'\nword\n'\nEOF\n"
     assert output.stdout == expected_output
 
+def test_lexer_newline_newline():
+    output = sp.run(["./eval_token", "echo tata\n\necho toto"], capture_output=True, text=True)
+    expected_output = "word\nword\n\n\nword\nword\nEOF\n"
+    assert output.stdout == expected_output
+
+def test_lexer_space_newline():
+    output = sp.run(["./eval_token", "if true       \n"], capture_output=True, text=True)
+    expected_output = "if\nword\n\n\nEOF\n"
+    assert output.stdout == expected_output
+
+def test_lexer_newline_space():
+    output = sp.run(["./eval_token", "if      true \n\n       "], capture_output=True, text=True)
+    expected_output = "if\nword\n\n\nEOF\n"
+    assert output.stdout == expected_output
+
 def test_lexer_newline():
     output = sp.run(["./eval_token", "echo toto\necho tata"], capture_output=True, text=True)
     expected_output = "word\nword\n\n\nword\nword\nEOF\n"

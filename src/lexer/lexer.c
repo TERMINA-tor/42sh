@@ -9,7 +9,7 @@
 
 // compare le mot avec les tokens
 
-enum token_type input_token(char *c)
+static enum token_type input_token(char *c)
 {
     if (strcmp(c, "if") == 0)
         return TOKEN_IF;
@@ -72,13 +72,13 @@ void lexer_free(struct lexer *lexer)
    le lexer
 */
 
-void skip_spaces(struct lexer *lexer)
+static void skip_spaces(struct lexer *lexer)
 {
     while (lexer->input[lexer->pos] == ' ')
         lexer->pos++;
 }
 
-struct token create_token(enum token_type type, char *value)
+static struct token create_token(enum token_type type, char *value)
 {
     struct token tok;
     tok.type = type;
@@ -91,7 +91,7 @@ struct token create_token(enum token_type type, char *value)
     return tok;
 }
 
-struct token handle_special_chars(struct lexer *lexer)
+static struct token handle_special_chars(struct lexer *lexer)
 {
     char *temp =
         calloc(2, sizeof(char)); // Allocate 2 bytes: one for the character and
@@ -110,7 +110,7 @@ struct token handle_special_chars(struct lexer *lexer)
     return tok;
 }
 
-struct token handle_quote(struct lexer *lexer)
+static struct token handle_quote(struct lexer *lexer)
 {
     int quote_length = 0;
     while (lexer->input[lexer->pos + quote_length + 1]
@@ -138,7 +138,7 @@ struct token handle_quote(struct lexer *lexer)
     return create_token(input_token(c), c);
 }
 
-struct token handle_word(struct lexer *lexer)
+static struct token handle_word(struct lexer *lexer)
 {
     int word_length = 0;
     while (lexer->input[lexer->pos + word_length] != ' '
@@ -173,12 +173,21 @@ struct token handle_word(struct lexer *lexer)
 }
 
 // handle comments
-void handle_comment(struct lexer *lexer)
+static void handle_comment(struct lexer *lexer)
 {
     while (lexer->input[lexer->pos] != '\n' && lexer->input[lexer->pos] != '\0')
     {
         lexer->pos++;
     }
+}
+
+static struct token handle_newline(struct lexer *lexer)
+{
+    while (lexer->input[lexer->pos] == '\n')
+    {
+        lexer->pos++;
+    }
+    return create_token(TOKEN_EOL, NULL);
 }
 
 struct token parse_input_for_tok(struct lexer *lexer)
@@ -188,6 +197,11 @@ struct token parse_input_for_tok(struct lexer *lexer)
     if (lexer->input[lexer->pos] == '\0')
     {
         return create_token(TOKEN_EOF, NULL);
+    }
+
+    if (lexer->input[lexer->pos] == '\n')
+    {
+        return handle_newline(lexer);
     }
 
     if (lexer->input[lexer->pos] == '\n' || lexer->input[lexer->pos] == '\''
