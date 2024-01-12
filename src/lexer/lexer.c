@@ -113,10 +113,11 @@ static struct token handle_special_chars(struct lexer *lexer)
 static struct token handle_quote(struct lexer *lexer)
 {
     int quote_length = 0;
-    while (lexer->input[lexer->pos + quote_length + 1]
+    while (lexer->input[lexer->pos + quote_length]
            != '\'') // +1 to skip the opening quote
     {
         quote_length++;
+        //printf("%d", quote_length);
     }
 
     char *c =
@@ -128,6 +129,7 @@ static struct token handle_quote(struct lexer *lexer)
     }
 
     int i = 0;
+    //echo aa'aa'
     while (lexer->input[lexer->pos] != '\'')
     {
         c[i] = lexer->input[lexer->pos];
