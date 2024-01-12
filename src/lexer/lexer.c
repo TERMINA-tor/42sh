@@ -9,7 +9,7 @@
 
 // compare le mot avec les tokens
 
-enum token_type input_token(char *c)
+static enum token_type input_token(char *c)
 {
     if (strcmp(c, "if") == 0)
         return TOKEN_IF;
@@ -72,23 +72,30 @@ void lexer_free(struct lexer *lexer)
    le lexer
 */
 
-void skip_spaces(struct lexer *lexer)
+static void skip_spaces(struct lexer *lexer)
 {
     while (lexer->input[lexer->pos] == ' ')
         lexer->pos++;
 }
 
-struct token create_token(enum token_type type, char *value)
+static struct token create_token(enum token_type type, char *value)
 {
     struct token tok;
     tok.type = type;
-    tok.value = value;
+
+    if (type == TOKEN_WORD)
+        tok.value = value;
+    else
+        free(value);
+
     return tok;
 }
 
-struct token handle_special_chars(struct lexer *lexer)
+static struct token handle_special_chars(struct lexer *lexer)
 {
-    char *temp = calloc(1, sizeof(char));
+    char *temp =
+        calloc(2, sizeof(char)); // Allocate 2 bytes: one for the character and
+                                 // one for the null terminator
     if (!temp)
     {
         fprintf(stderr, "Error: calloc failed\n");
@@ -103,9 +110,17 @@ struct token handle_special_chars(struct lexer *lexer)
     return tok;
 }
 
-struct token handle_quote(struct lexer *lexer)
+static struct token handle_quote(struct lexer *lexer)
 {
-    char *c = calloc(1, sizeof(char));
+    int quote_length = 0;
+    while (lexer->input[lexer->pos + quote_length]
+           != '\'') // +1 to skip the opening quote
+    {
+        quote_length++;
+    }
+
+    char *c =
+        calloc(quote_length + 1, sizeof(char)); // +1 for the null terminator
     if (!c)
     {
         fprintf(stderr, "Error: calloc failed\n");
@@ -113,7 +128,6 @@ struct token handle_quote(struct lexer *lexer)
     }
 
     int i = 0;
-    lexer->pos++;
     while (lexer->input[lexer->pos] != '\'')
     {
         c[i] = lexer->input[lexer->pos];
@@ -124,9 +138,23 @@ struct token handle_quote(struct lexer *lexer)
     return create_token(input_token(c), c);
 }
 
-struct token handle_word(struct lexer *lexer)
+static struct token handle_word(struct lexer *lexer)
 {
-    char *c = calloc(1, sizeof(char));
+    int word_length = 0;
+    while (lexer->input[lexer->pos + word_length] != ' '
+           && lexer->input[lexer->pos + word_length] != '\0'
+           && lexer->input[lexer->pos + word_length] != '\n'
+           && lexer->input[lexer->pos + word_length] != ';')
+    {
+        if (lexer->input[lexer->pos + word_length] == '\'')
+        {
+            break;
+        }
+        word_length++;
+    }
+
+    char *c =
+        calloc(word_length + 1, sizeof(char)); // +1 for the null terminator
     if (!c)
     {
         fprintf(stderr, "Error: calloc failed\n");
@@ -134,20 +162,32 @@ struct token handle_word(struct lexer *lexer)
     }
 
     int i = 0;
-    while (lexer->input[lexer->pos] != ' ' && lexer->input[lexer->pos] != '\0'
-           && lexer->input[lexer->pos] != '\n'
-           && lexer->input[lexer->pos] != ';')
+    while (i < word_length)
     {
-        if (lexer->input[lexer->pos] == '\'')
-        {
-            break;
-        }
         c[i] = lexer->input[lexer->pos];
         i++;
         lexer->pos++;
     }
     c[i] = '\0';
     return create_token(input_token(c), c);
+}
+
+// handle comments
+static void handle_comment(struct lexer *lexer)
+{
+    while (lexer->input[lexer->pos] != '\n' && lexer->input[lexer->pos] != '\0')
+    {
+        lexer->pos++;
+    }
+}
+
+static struct token handle_newline(struct lexer *lexer)
+{
+    while (lexer->input[lexer->pos] == '\n')
+    {
+        lexer->pos++;
+    }
+    return create_token(TOKEN_EOL, NULL);
 }
 
 struct token parse_input_for_tok(struct lexer *lexer)
@@ -159,15 +199,26 @@ struct token parse_input_for_tok(struct lexer *lexer)
         return create_token(TOKEN_EOF, NULL);
     }
 
+    if (lexer->input[lexer->pos] == '\n')
+    {
+        return handle_newline(lexer);
+    }
+
     if (lexer->input[lexer->pos] == '\n' || lexer->input[lexer->pos] == '\''
         || lexer->input[lexer->pos] == ';')
     {
         return handle_special_chars(lexer);
     }
 
-    if (lexer->input[lexer->pos - 1] == '\'')
+    if (lexer->pos != 0 && lexer->input[lexer->pos - 1] == '\'')
     {
         return handle_quote(lexer);
+    }
+
+    if (lexer->input[lexer->pos] == '#')
+    {
+        handle_comment(lexer);
+        return parse_input_for_tok(lexer);
     }
 
     return handle_word(lexer);
@@ -175,10 +226,10 @@ struct token parse_input_for_tok(struct lexer *lexer)
 
 struct token lexer_peek(struct lexer *lexer)
 {
-    size_t old_pos = lexer->pos;
-    struct token res = parse_input_for_tok(lexer);
-    lexer->pos = old_pos;
-    return res;
+    ssize_t pos = lexer->pos;
+    struct token tok = parse_input_for_tok(lexer);
+    lexer->pos = pos;
+    return tok;
 }
 
 struct token lexer_pop(struct lexer *lexer)
