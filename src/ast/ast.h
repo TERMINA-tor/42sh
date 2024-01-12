@@ -1,7 +1,7 @@
 #ifndef AST_H
 #define AST_H
 
-#include <stddef.h>
+#include <stdlib.h>
 
 enum ast_type
 {
@@ -16,6 +16,7 @@ struct ast
     enum ast_type type; ///< node type
     struct ast **children; ///< list of children
     size_t nbchildren; ///< number of children
+    char *value; ///< value of the current token (can be a word or a command)
 };
 
 /**

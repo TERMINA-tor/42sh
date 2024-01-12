@@ -175,7 +175,10 @@ struct token parse_input_for_tok(struct lexer *lexer)
 
 struct token lexer_peek(struct lexer *lexer)
 {
-    return parse_input_for_tok(lexer);
+    size_t old_pos = lexer->pos;
+    struct token res = parse_input_for_tok(lexer);
+    lexer->pos = old_pos;
+    return res;
 }
 
 struct token lexer_pop(struct lexer *lexer)

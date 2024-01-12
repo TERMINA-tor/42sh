@@ -1,16 +1,19 @@
 #ifndef PARSER_H
 #define PARSER_H
 
+#include "../ast/ast.h"
+#include "../lexer/lexer.h"
+
 enum parser_status
 {
-	PARSER_OK,
-	PARSER_UNEXPECTED_TOKEN,
+        PARSER_OK,
+        PARSER_UNEXPECTED_TOKEN,
 };
 
 /**
  ** \brief parse input rule
  * input =
- * 	list '\n'
+ *      list '\n'
  *    | list EOF
  *    | '\n'
  *    | EOF
@@ -23,8 +26,12 @@ enum parser_status parse_and_or(struct ast **res, struct lexer *lexer);
 
 enum parser_status parse_command(struct ast **res, struct lexer *lexer);
 
+enum parser_status parse_pipeline(struct ast **res, struct lexer *lexer);
+
 enum parser_status parse_simple_command(struct ast **res, struct lexer *lexer);
 
 enum parser_status parse_element(struct ast **res, struct lexer *lexer);
+
+enum parser_status parser_element(struct ast **res, struct lexer *lexer);
 
 #endif /* ! PARSER_H */
