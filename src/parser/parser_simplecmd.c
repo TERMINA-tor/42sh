@@ -2,7 +2,7 @@
 
 enum parser_status parse_input(struct ast **res, struct lexer *lexer)
 {
-	*res = calloc(1, sizeof(struct ast));
+	*res = calloc(1, sizeof(struct ast)); // initialisation of the ast
 	struct token next = lexer_peek(lexer);
 	
 	switch (next.type)
@@ -63,12 +63,11 @@ enum parser_status parse_command(struct ast **res, struct lexer *lexer)
 	if (!*res)
 		return PARSER_UNEXPECTED_TOKEN;
 	(*res)->value = lexer_pop(lexer).value;
-	return parse_simple_command(res, lexer);
+	return parse_simple_command(res, lexer); // passing the command node
 }
 
 enum parser_status parse_simple_command(struct ast **res, struct lexer *lexer)
 {
-	struct ast *word;
 	struct ast *command = *res;
 	size_t new_size = command->nbchildren * sizeof(struct ast);
 	if (lexer_peek(lexer).type == TOKEN_WORD)
@@ -76,7 +75,11 @@ enum parser_status parse_simple_command(struct ast **res, struct lexer *lexer)
 		command->nbchildren += 1;
 		new_size = command->nbchildren * sizeof(struct ast);
 		command->children = realloc(command->children, new_size);
-		word = ast_new(AST_WORD);
+		if (! command->children)
+			return PARSER_UNEXPECTED_TOKEN;
+		struct ast *word = ast_new(AST_WORD);
+		if (!word)
+			return PARSER_UNEXPECTED_TOKEN;
 		word->value = lexer_pop(lexer).value;
 		command->children[command->nbchildren - 1] = word;
 		while (parse_element(res, lexer) == PARSER_OK);
@@ -87,7 +90,6 @@ enum parser_status parse_simple_command(struct ast **res, struct lexer *lexer)
 
 enum parser_status parse_element(struct ast **res, struct lexer *lexer)
 {
-	struct ast *word;
 	struct ast *command = *res;
 	size_t new_size = command->nbchildren * sizeof(struct ast);
 	if (lexer_peek(lexer).type == TOKEN_WORD)
@@ -98,7 +100,9 @@ enum parser_status parse_element(struct ast **res, struct lexer *lexer)
 		if (!command->children)
 			return PARSER_UNEXPECTED_TOKEN;
 
-		word = ast_new(AST_WORD);
+		struct ast *word = ast_new(AST_WORD);
+		if (!word)
+			return PARSER_UNEXPECTED_TOKEN;
 		word->value = lexer_pop(lexer).value;	
 		command->children[command->nbchildren - 1] = word;
 		return PARSER_OK;
