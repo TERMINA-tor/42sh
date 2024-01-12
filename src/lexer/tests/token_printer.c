@@ -22,7 +22,8 @@ int main(int argc, char *argv[])
     {
         printf("%s\n",
                tab[token.type]); // Use token.type instead of token.value
-        free(token.value);
+        if (token.type == TOKEN_WORD)
+            free(token.value);
         token = lexer_pop(lexer);
     }
 
