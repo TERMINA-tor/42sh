@@ -88,7 +88,9 @@ struct token create_token(enum token_type type, char *value)
 
 struct token handle_special_chars(struct lexer *lexer)
 {
-    char *temp = calloc(1, sizeof(char));
+    char *temp =
+        calloc(2, sizeof(char)); // Allocate 2 bytes: one for the character and
+                                 // one for the null terminator
     if (!temp)
     {
         fprintf(stderr, "Error: calloc failed\n");
@@ -105,7 +107,15 @@ struct token handle_special_chars(struct lexer *lexer)
 
 struct token handle_quote(struct lexer *lexer)
 {
-    char *c = calloc(1, sizeof(char));
+    int quote_length = 0;
+    while (lexer->input[lexer->pos + quote_length + 1]
+           != '\'') // +1 to skip the opening quote
+    {
+        quote_length++;
+    }
+
+    char *c =
+        calloc(quote_length + 1, sizeof(char)); // +1 for the null terminator
     if (!c)
     {
         fprintf(stderr, "Error: calloc failed\n");
@@ -126,7 +136,21 @@ struct token handle_quote(struct lexer *lexer)
 
 struct token handle_word(struct lexer *lexer)
 {
-    char *c = calloc(1, sizeof(char));
+    int word_length = 0;
+    while (lexer->input[lexer->pos + word_length] != ' '
+           && lexer->input[lexer->pos + word_length] != '\0'
+           && lexer->input[lexer->pos + word_length] != '\n'
+           && lexer->input[lexer->pos + word_length] != ';')
+    {
+        if (lexer->input[lexer->pos + word_length] == '\'')
+        {
+            break;
+        }
+        word_length++;
+    }
+
+    char *c =
+        calloc(word_length + 1, sizeof(char)); // +1 for the null terminator
     if (!c)
     {
         fprintf(stderr, "Error: calloc failed\n");
@@ -134,14 +158,8 @@ struct token handle_word(struct lexer *lexer)
     }
 
     int i = 0;
-    while (lexer->input[lexer->pos] != ' ' && lexer->input[lexer->pos] != '\0'
-           && lexer->input[lexer->pos] != '\n'
-           && lexer->input[lexer->pos] != ';')
+    while (i < word_length)
     {
-        if (lexer->input[lexer->pos] == '\'')
-        {
-            break;
-        }
         c[i] = lexer->input[lexer->pos];
         i++;
         lexer->pos++;
@@ -175,7 +193,10 @@ struct token parse_input_for_tok(struct lexer *lexer)
 
 struct token lexer_peek(struct lexer *lexer)
 {
-    return parse_input_for_tok(lexer);
+    ssize_t pos = lexer->pos;
+    struct token tok = parse_input_for_tok(lexer);
+    lexer->pos = pos;
+    return tok;
 }
 
 struct token lexer_pop(struct lexer *lexer)
