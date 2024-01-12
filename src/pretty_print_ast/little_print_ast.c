@@ -34,13 +34,14 @@ void little_print_ast(struct ast *res, int depth)
         break;
 
     case AST_WORD:
-        printf("word \"%s\"\n", "word");
+        printf("word \"%s\"\n", res->value);
         break;
 
     case AST_COMMAND:
-        printf("command \"");
+        // printf("command \"");
+        printf("command \"%s\"\n", res->value);
         // Print command and arguments
-        printf("\"\n");
+        // printf("\"\n");
         break;
     }
 }
