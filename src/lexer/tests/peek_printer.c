@@ -25,10 +25,12 @@ int main(int argc, char *argv[])
     {
         printf("%s\n",
                tab[token.type]); // Use token.type instead of token.value
-        free(token.value);
+        if (token.type == TOKEN_WORD)
+            free(token.value);
         token = lexer_peek(lexer);
         if (i + 1 == len)
-            free(token.value);
+            if (token.type == TOKEN_WORD)
+                free(token.value);
     }
 
     if (token.type == TOKEN_EOF)
