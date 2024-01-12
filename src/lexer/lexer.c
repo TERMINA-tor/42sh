@@ -82,7 +82,12 @@ struct token create_token(enum token_type type, char *value)
 {
     struct token tok;
     tok.type = type;
-    tok.value = value;
+
+    if (type == TOKEN_WORD)
+        tok.value = value;
+    else
+        free(value);
+
     return tok;
 }
 
@@ -123,7 +128,6 @@ struct token handle_quote(struct lexer *lexer)
     }
 
     int i = 0;
-    lexer->pos++;
     while (lexer->input[lexer->pos] != '\'')
     {
         c[i] = lexer->input[lexer->pos];
@@ -168,6 +172,15 @@ struct token handle_word(struct lexer *lexer)
     return create_token(input_token(c), c);
 }
 
+// handle comments
+void handle_comment(struct lexer *lexer)
+{
+    while (lexer->input[lexer->pos] != '\n' && lexer->input[lexer->pos] != '\0')
+    {
+        lexer->pos++;
+    }
+}
+
 struct token parse_input_for_tok(struct lexer *lexer)
 {
     skip_spaces(lexer);
@@ -183,9 +196,15 @@ struct token parse_input_for_tok(struct lexer *lexer)
         return handle_special_chars(lexer);
     }
 
-    if (lexer->input[lexer->pos - 1] == '\'')
+    if (lexer->pos != 0 && lexer->input[lexer->pos - 1] == '\'')
     {
         return handle_quote(lexer);
+    }
+
+    if (lexer->input[lexer->pos] == '#')
+    {
+        handle_comment(lexer);
+        return parse_input_for_tok(lexer);
     }
 
     return handle_word(lexer);

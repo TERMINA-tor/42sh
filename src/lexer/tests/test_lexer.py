@@ -58,3 +58,29 @@ def test_lexer_if_elif_elif_elif_else():
     output = sp.run(["./eval_token", "if true; then elif true; then elif true; then elif true; then else ; fi"], capture_output=True, text=True)
     expected_output = "if\nword\n;\nthen\nelif\nword\n;\nthen\nelif\nword\n;\nthen\nelif\nword\n;\nthen\nelse\n;\nfi\nEOF\n"
     assert output.stdout == expected_output
+
+def test_lexer_comment():
+    output = sp.run(["./eval_token", "echo #comment"], capture_output=True, text=True)
+    expected_output = "word\nEOF\n"
+    assert output.stdout == expected_output
+
+def test_lexer_comment_with_word():
+    output = sp.run(["./eval_token", "echo #comment word"], capture_output=True, text=True)
+    expected_output = "word\nEOF\n"
+    assert output.stdout == expected_output
+
+def test_lexer_comment_words_after_echo():
+    output = sp.run(["./eval_token", "echo #comment 'word'"], capture_output=True, text=True)
+    expected_output = "word\nEOF\n"
+    assert output.stdout == expected_output
+
+def test_lexer_comment_outside_quotes():
+    output = sp.run(["./eval_token", "echo 'word' #comment word"], capture_output=True, text=True)
+    expected_output = "word\n'\nword\n'\nEOF\n"
+    assert output.stdout == expected_output
+
+def test_lexer_comment_inside_quote_and_outside():
+    output = sp.run(["./eval_token", "echo 'word #comment' # comment"], capture_output=True, text=True)
+    expected_output = "word\n'\nword\n'\nEOF\n"
+    assert output.stdout == expected_output
+
