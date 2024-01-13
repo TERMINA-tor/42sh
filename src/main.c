@@ -51,5 +51,5 @@ int main(int argc, char **argv)
     lexer_free(lexer);
     if (retval == -1)
 	    return 2;
-    return 0;
+    return retval;
 }

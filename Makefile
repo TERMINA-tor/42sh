@@ -11,7 +11,8 @@ main:
 	$(CC) $(CFLAGS) -D_POSIX_C_SOURCE=200809L -o 42sh $(DEPENDENCIES)
 
 check: main
-	pytest
+	python3 -m pytest -vv tests/testsuite.py
+	make clean
 
 clean:
 	$(RM) *.o 42sh
