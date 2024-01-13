@@ -87,7 +87,7 @@ static struct token create_token(enum token_type type, char *value)
         tok.value = value;
     else
     {
-	tok.value = NULL;
+        tok.value = NULL;
         free(value);
     }
 
@@ -229,7 +229,7 @@ struct token lexer_peek(struct lexer *lexer)
     ssize_t pos = lexer->pos;
     struct token tok = parse_input_for_tok(lexer);
     if (tok.value)
-	    free(tok.value);
+        free(tok.value);
     lexer->pos = pos;
     return tok;
 }

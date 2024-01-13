@@ -2,5 +2,5 @@
 
 int main(int argc, char **argv)
 {
-	printf("%s\n", get_input(argc, argv));
+    printf("%s\n", get_input(argc, argv));
 }
