@@ -262,7 +262,7 @@ static enum parser_status parse_else(struct ast **res, struct lexer *lexer)
         struct token next = lexer_peek(lexer);
         if (next.type == TOKEN_ELSE) // else
         {
-                next = lexer_pop(lexer);
+                lexer_pop(lexer);
                 return parse_compound_list(res, lexer); // compound list
         }
         else if (next.type == TOKEN_ELIF) // elif
@@ -285,8 +285,13 @@ static enum parser_status parse_else(struct ast **res, struct lexer *lexer)
 
 		add_child_ast(tmp, *res);
 		
-		parse_else(&tmp, lexer); // [else_clause]
-		
+		struct ast *condition;
+		if (parse_else(&condition, lexer) == PARSER_OK) // optional else
+        	{
+                	if (add_child_ast(tmp, condition))
+                        	goto error_if_else;
+        	}
+
 		*res = tmp;
                 return PARSER_OK;
      
