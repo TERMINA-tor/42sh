@@ -1,7 +1,3 @@
-*.o
-*.s
-*.swp
-42sh
 __pycache__
-.pytest_cache
-.clang-format
+*.png
+*.gv
