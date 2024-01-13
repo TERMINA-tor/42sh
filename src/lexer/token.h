@@ -18,16 +18,6 @@ enum token_type
     TOKEN_ERROR
 };
 
-enum ast_type
-{
-    AST_IF,
-    AST_ELSE,
-    AST_ELIF,
-    AST_THEN,
-    AST_WORD,
-    AST_COMMAND
-};
-
 struct token
 {
     enum token_type type; // The kind of token
