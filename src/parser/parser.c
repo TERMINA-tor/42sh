@@ -122,9 +122,19 @@ static enum parser_status parse_element(struct ast **res, struct lexer *lexer)
 	return PARSER_UNEXPECTED_TOKEN;
 }
 
-static enum parser_status parse_shell_command(struct ast **res, struct lexer *lexer)
+/* static enum parser_status parse_shell_command(struct ast **res, struct lexer *lexer)
 {
-	return parse_rule_if(res, lexer);
+	if (*res && (*res)->type == AST_ELIF)
+		return parse_rule_if (res, lexer);
+	struct ast *tmp = ast_new(AST_ELIF); // to test the next expression
+	if (parse_rule_if(&tmp, lexer) != PARSER_OK) // if it is not an if rule
+	{
+		ast_free(tmp); // we do not need the temporary child anymore
+		return PARSER_UNEXPECTED_TOKEN;
+	}
+	// add_child_ast(*res, tmp); // add tmp as child of res
+	*res = tmp;
+	return PARSER_OK;
 }
 
 static enum parser_status parse_rule_if(struct ast **res, struct lexer *lexer)
@@ -134,7 +144,54 @@ static enum parser_status parse_rule_if(struct ast **res, struct lexer *lexer)
 		return PARSER_UNEXPECTED_TOKEN;
 	lexer_pop(lexer);
 	
-	struct ast *command = ast_new(AST_ELIF);
+	struct ast *command = ast_new(AST_IF);
+	struct ast *condition = NULL;
+	if (parse_compound_list(&condition, lexer) != PARSER_OK) // followed by complist
+		goto error;
+
+	if (add_child_ast(command, condition))
+		goto error;
+
+	if (lexer_peek(lexer).type != TOKEN_THEN) // followed by TOKEN_THEN
+		return PARSER_UNEXPECTED_TOKEN;
+
+	lexer_pop(lexer);
+
+	if (parse_compound_list(&condition, lexer) != PARSER_OK) // compound list
+		goto error;
+
+	if (add_child_ast(command, condition))
+		goto error;
+
+	parse_else(res, lexer);
+	
+	if (command)
+		add_child_ast(*res, command);
+	
+	if (lexer_peek(lexer).type != TOKEN_FI) // ends with TOKEN_FI
+		return PARSER_UNEXPECTED_TOKEN;
+
+	lexer_pop(lexer);
+
+	return PARSER_OK;
+
+error:
+	ast_free(condition);
+	return PARSER_UNEXPECTED_TOKEN;
+} */
+
+static enum parser_status parse_shell_command(struct ast **res, struct lexer *lexer)
+{
+	return parse_rule_if(res, lexer);	
+}
+
+static enum parser_status parse_rule_if(struct ast **res, struct lexer *lexer)
+{
+    if (lexer_peek(lexer).type != TOKEN_IF) // must begin with TOKEN_IF
+		return PARSER_UNEXPECTED_TOKEN;
+	lexer_pop(lexer);
+	
+	struct ast *command = ast_new(AST_IF);
 	*res = command;	
 	struct ast *condition;
 	if (parse_compound_list(&condition, lexer) != PARSER_OK) // followed by complist
@@ -167,9 +224,9 @@ static enum parser_status parse_rule_if(struct ast **res, struct lexer *lexer)
 
 	return PARSER_OK;
 
-error:
+    error:
 	ast_free(condition);
-	return PARSER_UNEXPECTED_TOKEN;
+	return PARSER_UNEXPECTED_TOKEN;	
 }
 
 static enum parser_status parse_compound_list(struct ast **res, struct lexer *lexer)
@@ -211,17 +268,31 @@ static enum parser_status parse_else(struct ast **res, struct lexer *lexer)
         else if (next.type == TOKEN_ELIF) // elif
         {
                 lexer_pop(lexer);
+		
+		struct ast *tmp = ast_new(AST_IF);
+
                 if (parse_compound_list(res, lexer) != PARSER_OK) //compound list
-                        return PARSER_UNEXPECTED_TOKEN;
+			goto error_if_else;
+
+		add_child_ast(tmp, *res);
 
                 if (lexer_peek(lexer).type != TOKEN_THEN) // then
-                        return PARSER_UNEXPECTED_TOKEN;
+                        goto error_if_else;
                 lexer_pop(lexer);
+
                 if (parse_compound_list(res, lexer) != PARSER_OK) // compound list
-                        return PARSER_UNEXPECTED_TOKEN;
-                parse_else(res, lexer); // [else_clause]
+                        goto error_if_else;
+
+		add_child_ast(tmp, *res);
+		
+		parse_else(&tmp, lexer); // [else_clause]
+		
+		*res = tmp;
                 return PARSER_OK;
-        }
+     
+error_if_else:
+		ast_free(tmp);
+		return PARSER_UNEXPECTED_TOKEN;
+	}
         return PARSER_UNEXPECTED_TOKEN;
 }
-
