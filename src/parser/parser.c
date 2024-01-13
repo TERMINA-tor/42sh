@@ -24,9 +24,8 @@ static enum parser_status parse_else(struct ast **res, struct lexer *lexer);
 
 enum parser_status parse_input(struct ast **res, struct lexer *lexer)
 {
-	*res = calloc(1, sizeof(struct ast)); // initialisation of the ast
 	struct token next = lexer_peek(lexer);
-	
+
 	switch (next.type)
 	{
 	case TOKEN_EOL:
@@ -91,19 +90,9 @@ static enum parser_status parse_simple_command(struct ast **res, struct lexer *l
 	{
 		*res = ast_new(AST_COMMAND);
 		struct ast *command = *res;
-		command->value = lexer_peek(lexer).value;
+		command->value = lexer_pop(lexer).value;
 		if (lexer_peek(lexer).type == TOKEN_WORD)
 		{
-			command->nbchildren += 1;
-			size_t new_size = command->nbchildren * sizeof(struct ast);
-			command->children = realloc(command->children, new_size);
-			if (! command->children)
-				return PARSER_UNEXPECTED_TOKEN;
-			struct ast *word = ast_new(AST_WORD);
-			if (!word)
-				return PARSER_UNEXPECTED_TOKEN;
-			word->value = lexer_pop(lexer).value;
-			command->children[command->nbchildren - 1] = word;
 			while (parse_element(res, lexer) == PARSER_OK);
 		}
 		return PARSER_OK;
@@ -177,7 +166,7 @@ static enum parser_status parse_compound_list(struct ast **res, struct lexer *le
 	struct token next = lexer_peek(lexer);
 	while (next.type == TOKEN_EOL || next.type == TOKEN_SEMICOLON) // (';' | '\n')
 	{
-		lexer_pop(lexer);
+		next = lexer_pop(lexer);
 		while (lexer_peek(lexer).type == TOKEN_EOL) // {\n}
 			lexer_pop(lexer);
 
@@ -199,7 +188,7 @@ static enum parser_status parse_else(struct ast **res, struct lexer *lexer)
         struct token next = lexer_peek(lexer);
         if (next.type == TOKEN_ELSE) // else
         {
-                lexer_pop(lexer);
+                next = lexer_pop(lexer);
                 return parse_compound_list(res, lexer); // compound list
         }
         else if (next.type == TOKEN_ELIF) // elif

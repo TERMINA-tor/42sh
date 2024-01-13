@@ -15,14 +15,13 @@ void ast_free(struct ast *ast)
 {
 	if (! ast)
 		return;
-	else if (!ast->nbchildren)
-		free(ast);
-	else
+	if (ast->value)
+		free(ast->value);
+	for (size_t i = 0; i < ast->nbchildren; i++)
 	{
-		for (size_t child = 0; child < ast->nbchildren; child++)
-		{
-			ast_free(ast->children[child]);
-		}
-		free(ast);
+		ast_free(ast->children[i]);
 	}
+	if (ast->nbchildren)
+		free(ast->children);
+	free(ast);
 }

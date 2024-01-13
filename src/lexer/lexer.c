@@ -74,7 +74,7 @@ void lexer_free(struct lexer *lexer)
 
 static void skip_spaces(struct lexer *lexer)
 {
-    while (lexer->input[lexer->pos] == ' ')
+    while (lexer->input[lexer->pos] && lexer->input[lexer->pos] == ' ')
         lexer->pos++;
 }
 
@@ -86,7 +86,10 @@ static struct token create_token(enum token_type type, char *value)
     if (type == TOKEN_WORD)
         tok.value = value;
     else
+    {
+	tok.value = NULL;
         free(value);
+    }
 
     return tok;
 }
@@ -183,10 +186,7 @@ static void handle_comment(struct lexer *lexer)
 
 static struct token handle_newline(struct lexer *lexer)
 {
-    while (lexer->input[lexer->pos] == '\n')
-    {
-        lexer->pos++;
-    }
+    lexer->pos++;
     return create_token(TOKEN_EOL, NULL);
 }
 
@@ -228,6 +228,8 @@ struct token lexer_peek(struct lexer *lexer)
 {
     ssize_t pos = lexer->pos;
     struct token tok = parse_input_for_tok(lexer);
+    if (tok.value)
+	    free(tok.value);
     lexer->pos = pos;
     return tok;
 }
