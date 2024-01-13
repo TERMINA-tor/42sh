@@ -25,3 +25,17 @@ void ast_free(struct ast *ast)
 		free(ast->children);
 	free(ast);
 }
+
+int add_child_ast(struct ast *parent, struct ast *child)
+{
+        parent->nbchildren += 1;
+        size_t new_size = parent->nbchildren * sizeof(struct ast);
+        parent->children = realloc(parent->children, new_size);
+        if (parent->children)
+        {
+                parent->children[parent->nbchildren - 1] = child;
+                return 0;
+        }
+        return 1;
+}
+

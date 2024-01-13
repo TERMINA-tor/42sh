@@ -151,7 +151,7 @@ int main(int argc, char **argv)
 	struct ast *res = NULL;
 	enum parser_status result = parse_input(&res, lexer);
 	
-	print_ast(res);
+	//print_ast(res);
 	free(input);
 	lexer_free(lexer);
 

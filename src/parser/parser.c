@@ -135,24 +135,41 @@ static enum parser_status parse_rule_if(struct ast **res, struct lexer *lexer)
 	lexer_pop(lexer);
 	
 	struct ast *command = ast_new(AST_ELIF);
-	*res = command;
+	*res = command;	
+	struct ast *condition;
+	if (parse_compound_list(&condition, lexer) != PARSER_OK) // followed by complist
+		goto error;
 
-	if (parse_compound_list(res, lexer) != PARSER_OK) // followed by complist
-		return PARSER_UNEXPECTED_TOKEN;
+	if (add_child_ast(*res, condition))
+		goto error;
 
 	if (lexer_peek(lexer).type != TOKEN_THEN) // followed by TOKEN_THEN
 		return PARSER_UNEXPECTED_TOKEN;
 
-	if (parse_compound_list(res, lexer) != PARSER_OK) // compound list
-		return PARSER_UNEXPECTED_TOKEN;
+	lexer_pop(lexer);
 
-	if (parse_else(res, lexer) != PARSER_OK) // optional else
-		return PARSER_UNEXPECTED_TOKEN;
+	if (parse_compound_list(&condition, lexer) != PARSER_OK) // compound list
+		goto error;
+
+	if (add_child_ast(*res, condition))
+		goto error;
+
+	if (parse_else(&condition, lexer) == PARSER_OK) // optional else
+	{
+		if (add_child_ast(*res, condition))
+			goto error;
+	}
 
 	if (lexer_peek(lexer).type != TOKEN_FI) // ends with TOKEN_FI
 		return PARSER_UNEXPECTED_TOKEN;
 
+	lexer_pop(lexer);
+
 	return PARSER_OK;
+
+error:
+	ast_free(condition);
+	return PARSER_UNEXPECTED_TOKEN;
 }
 
 static enum parser_status parse_compound_list(struct ast **res, struct lexer *lexer)
@@ -171,7 +188,7 @@ static enum parser_status parse_compound_list(struct ast **res, struct lexer *le
 			lexer_pop(lexer);
 
 		if (parse_and_or(res, lexer) != PARSER_OK) // and_or
-			return PARSER_UNEXPECTED_TOKEN;
+			break;
 		next = lexer_peek(lexer);
 	}
 	if (lexer_peek(lexer).type == TOKEN_SEMICOLON) // [';']

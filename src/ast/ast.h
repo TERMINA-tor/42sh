@@ -29,4 +29,10 @@ struct ast *ast_new(enum ast_type type);
  */
 
 void ast_free(struct ast *ast);
+
+/**
+ ** \brief append child to parent->children
+ */
+int add_child_ast(struct ast *parent, struct ast *child);
+
 #endif
