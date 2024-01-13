@@ -5,6 +5,7 @@
 
 int execute_command(struct ast *command_node);
 char **convert_children_to_argv(struct ast *node);
+int evaluate_if(struct ast *if_node);
 
 int evaluate_node(struct ast *node)
 {
@@ -15,6 +16,8 @@ int evaluate_node(struct ast *node)
 
     switch (node->type)
     {
+    case AST_IF:
+        return evaluate_if(node);
     case AST_COMMAND:
         return execute_command(node);
     case AST_WORD:
@@ -24,6 +27,42 @@ int evaluate_node(struct ast *node)
         fprintf(stderr, "Unknown AST node type\n");
         return -1;
     }
+}
+
+int evaluate_if(struct ast *if_node)
+{
+    if (if_node == NULL || if_node->nbchildren == 0)
+    {
+        fprintf(stderr, "Invalid if statement\n");
+        return -1;
+    }
+
+    // Evaluate the condition
+    int condition_result = evaluate_node(if_node->children[0]);
+    if (condition_result == -1)
+    {
+        fprintf(stderr, "Error evaluating if condition\n");
+        return -1;
+    }
+
+    if (condition_result == 0)
+    {
+        // If condition is true and there is a 'true' block
+        if (if_node->nbchildren > 1)
+        {
+            return evaluate_node(if_node->children[1]);
+        }
+    }
+    else
+    {
+        // If condition is false and there is an 'else' block
+        if (if_node->nbchildren > 2)
+        {
+            return evaluate_node(if_node->children[2]);
+        }
+    }
+
+    return 0;
 }
 
 int execute_command(struct ast *command_node)
