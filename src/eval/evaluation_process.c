@@ -6,7 +6,7 @@
 int execute_command(struct ast *command_node);
 char **convert_children_to_argv(struct ast *node);
 
-int evaluate_ast(struct ast *node)
+int evaluate_node(struct ast *node)
 {
     if (node == NULL)
     {
