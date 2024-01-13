@@ -1,3 +1,13 @@
 __pycache__
 *.png
 *.gv
+Makefile.in
+aclocal.m4
+ar-lib
+autom4te.cache
+compile
+configure
+configure~
+depcomp
+install-sh
+missing
