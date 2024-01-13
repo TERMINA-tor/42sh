@@ -45,7 +45,7 @@ int evaluate_if(struct ast *if_node)
         return -1;
     }
 
-    if (condition_result == 0)
+    if (condition_result == builtin_true())
     {
         // If condition is true and there is a 'true' block
         if (if_node->nbchildren > 1)
