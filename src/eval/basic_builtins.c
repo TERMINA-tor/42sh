@@ -6,13 +6,13 @@
 #include "builtins.h"
 
 // The 'true' built-in function
-int builtin_true()
+int builtin_true(void)
 {
     return 0;
 }
 
 // The 'false' built-in function
-int builtin_false()
+int builtin_false(void)
 {
     return 1;
 }
