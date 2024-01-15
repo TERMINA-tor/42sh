@@ -13,7 +13,7 @@ AC_CONFIG_FILES([
     src/lexer/Makefile
     src/ast/Makefile
     src/input/Makefile
-    src/pretty_print_ast/Makefile
+    src/eval/Makefile
 ])
 
 AC_OUTPUT

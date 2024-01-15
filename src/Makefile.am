@@ -8,13 +8,13 @@ bin_PROGRAMS = 42sh
     $(top_builddir)/src/parser/libparser.a \
     $(top_builddir)/src/lexer/liblexer.a \
     $(top_builddir)/src/ast/libast.a \
-    $(top_builddir)/src/pretty_print_ast/libpretty_print_ast.a \
-    $(top_builddir)/src/input/libinput.a
+    $(top_builddir)/src/input/libinput.a \
+    $(top_builddir)/src/eval/libeval.a
 
 
 SUBDIRS = \
     parser \
     ast \
-    pretty_print_ast \
     input \
-    lexer
+    lexer \
+    eval
