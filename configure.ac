@@ -8,6 +8,7 @@ AC_PROG_RANLIB
 
 AC_CONFIG_FILES([
     Makefile
+    src/Makefile
     src/parser/Makefile
     src/lexer/Makefile
     src/ast/Makefile
