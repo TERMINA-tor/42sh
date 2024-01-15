@@ -37,6 +37,7 @@ int main(int argc, char **argv)
     {
 	    lexer_free(lexer);
 	    ast_free(res);
+	    free(input);
 	    fprintf(stderr, "./42sh: unexpected token\n");
 	    return 2;
     }

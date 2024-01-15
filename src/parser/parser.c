@@ -200,7 +200,7 @@ static enum parser_status parse_rule_if(struct ast **res, struct lexer *lexer)
 
     struct ast *command = ast_new(AST_IF);
     *res = command;
-    struct ast *condition;
+    struct ast *condition = NULL;
     if (parse_compound_list(&condition, lexer)
         != PARSER_OK) // followed by complist
         goto error;
