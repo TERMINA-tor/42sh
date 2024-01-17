@@ -181,7 +181,7 @@ def test_lexer_for_loop():
 
 def test_nested_for_loop():
     output = sp.run(["./eval_token", "for i in 1 2 3; do for j in 1 2 3; do echo $i $j; done; done"], capture_output=True, text=True)
-    expected_output = "for\nword\nin\nword\nword\nword\n;\ndo\nfor\nword\nin\nword\nword\nword\n;\ndo\nword\nword\nwordg\n;\ndone\n;\ndone\nEOF\n"
+    expected_output = "for\nword\nin\nword\nword\nword\n;\ndo\nfor\nword\nin\nword\nword\nword\n;\ndo\nword\nword\nword\n;\ndone\n;\ndone\nEOF\n"
     assert output.stdout == expected_output
 
 def test_nested_while_loop():
