@@ -11,7 +11,7 @@ enum input_status
     INPUT_ERROR
 };
 
-char *input_error(char *input, FILE *fd);
-char *get_input(int argc, char **argv);
+FILE *input_error(FILE *fd);
+FILE *get_input(int argc, char **argv);
 
 #endif /* INPUT_H */

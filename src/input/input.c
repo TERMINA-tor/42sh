@@ -1,8 +1,7 @@
 #include "input.h"
 
-char *input_error(char *input, FILE *fd)
+FILE *input_error(FILE *fd)
 {
-    free(input);
     if (fd)
         fclose(fd);
     fprintf(stderr, "The command line syntax is:");
@@ -10,12 +9,11 @@ char *input_error(char *input, FILE *fd)
     return NULL;
 }
 
-char *get_input(int argc, char **argv)
+FILE *get_input(int argc, char **argv)
 {
     if (argc > 3)
-        return input_error(NULL, NULL);
-    char *input = 0;
-    size_t input_size = 0;
+        return input_error(NULL);
+
     FILE *fd = fdopen(0, "r");
     for (int i = 1; i < argc; i++)
     {
@@ -23,43 +21,30 @@ char *get_input(int argc, char **argv)
         {
             i++;
             if (i == argc)
-                return input_error(NULL, fd);
+                return input_error(fd);
             fd = fmemopen(argv[i], strlen(argv[i]), "r");
         }
         else if (!strcmp(argv[i], "-e"))
         {
             if (i == argc)
-                return input_error(NULL, fd);
+                return input_error(fd);
             i++;
             fd = fopen(argv[i], "r");
         }
         else if (!strcmp(argv[i], "--verbose"))
         {
             if (fd->_fileno != 0)
-                return input_error(NULL, fd);
+                return input_error(fd);
             setenv("VERBOSE", "1", 0);
         }
         else if (!strcmp(argv[i], "--pretty-print"))
         {
             if (fd->_fileno != 0)
-                return input_error(NULL, fd);
+                return input_error(fd);
             setenv("PRETTY_PRINT", "1", 0);
         }
         else
-            return input_error(NULL, fd);
+            return input_error(fd);
     }
-
-    char buffer[128];
-    size_t a = 1;
-
-    do
-    {
-        a = fread(buffer, 1, 128, fd);
-        input_size += a;
-        input = realloc(input, input_size * sizeof(char));
-        memcpy(input + input_size - a, buffer, a);
-    } while (a > 0);
-
-    fclose(fd);
-    return input;
+    return fd;
 }
