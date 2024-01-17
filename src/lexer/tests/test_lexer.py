@@ -86,7 +86,7 @@ def test_lexer_comment_inside_quote_and_outside():
 
 def test_lexer_newline_newline():
     output = sp.run(["./eval_token", "echo tata\n\necho toto"], capture_output=True, text=True)
-    expected_output = "word\nword\n\n\nword\nword\nEOF\n"
+    expected_output = "word\nword\n\n\n\n\nword\nword\nEOF\n"
     assert output.stdout == expected_output
 
 def test_lexer_space_newline():
@@ -96,7 +96,7 @@ def test_lexer_space_newline():
 
 def test_lexer_newline_space():
     output = sp.run(["./eval_token", "if      true \n\n       "], capture_output=True, text=True)
-    expected_output = "if\nword\n\n\nEOF\n"
+    expected_output = "if\nword\n\n\n\n\nEOF\n"
     assert output.stdout == expected_output
 
 def test_lexer_newline():
@@ -117,4 +117,79 @@ def test_lexer_if_else_newline():
 def test_lexer_if_elif_else_newline():
     output = sp.run(["./eval_token", "if true\nthen\nelif true\nthen\nelse\nfi"], capture_output=True, text=True)
     expected_output = "if\nword\n\n\nthen\n\n\nelif\nword\n\n\nthen\n\n\nelse\n\n\nfi\nEOF\n"
+    assert output.stdout == expected_output
+
+def test_lexer_redirection_greater_than():
+    output = sp.run(["./eval_token", "command > file"], capture_output=True, text=True)
+    expected_output = "word\nredirection\nword\nEOF\n"
+    assert output.stdout == expected_output
+
+def test_lexer_redirection_double_greater_than():
+    output = sp.run(["./eval_token", "command >> file"], capture_output=True, text=True)
+    expected_output = "word\nredirection\nword\nEOF\n"
+    assert output.stdout == expected_output
+
+def test_lexer_redirection_less_than():
+    output = sp.run(["./eval_token", "command < file"], capture_output=True, text=True)
+    expected_output = "word\nredirection\nword\nEOF\n"
+    assert output.stdout == expected_output
+
+def test_lexer_redirection_greater_and_and():
+    output = sp.run(["./eval_token", "command >& file"], capture_output=True, text=True)
+    expected_output = "word\nredirection\nword\nEOF\n"
+    assert output.stdout == expected_output
+
+def test_lexer_redirection_less_and_and():
+    output = sp.run(["./eval_token", "command <& file"], capture_output=True, text=True)
+    expected_output = "word\nredirection\nword\nEOF\n"
+    assert output.stdout == expected_output
+
+def test_lexer_redirection_less_and_pipe():
+    output = sp.run(["./eval_token", "command >| command2"], capture_output=True, text=True)
+    expected_output = "word\nredirection\nword\nEOF\n"
+    assert output.stdout == expected_output
+
+def test_lexer_redirection_less_and_greater():
+    output = sp.run(["./eval_token", "command <> command2"], capture_output=True, text=True)
+    expected_output = "word\nredirection\nword\nEOF\n"
+    assert output.stdout == expected_output
+
+def test_lexer_pipe_single():
+    output = sp.run(["./eval_token", "command1 | command2"], capture_output=True, text=True)
+    expected_output = "word\n|\nword\nEOF\n"
+    assert output.stdout == expected_output
+
+def test_lexer_pipe_multiple():
+    output = sp.run(["./eval_token", "command1 | command2 | command3"], capture_output=True, text=True)
+    expected_output = "word\n|\nword\n|\nword\nEOF\n"
+    assert output.stdout == expected_output
+
+def test_lexer_while_loop():
+    output = sp.run(["./eval_token", "while true; do echo loop; done"], capture_output=True, text=True)
+    expected_output = "while\nword\n;\ndo\nword\nword\n;\ndone\nEOF\n"
+    assert output.stdout == expected_output
+
+def test_lexer_until_loop():
+    output = sp.run(["./eval_token", "until false; do echo loop; done"], capture_output=True, text=True)
+    expected_output = "until\nword\n;\ndo\nword\nword\n;\ndone\nEOF\n"
+    assert output.stdout == expected_output
+
+def test_lexer_for_loop():
+    output = sp.run(["./eval_token", "for i in 1 2 3; do echo $i; done"], capture_output=True, text=True)
+    expected_output = "for\nword\nin\nword\nword\nword\n;\ndo\nword\nword\n;\ndone\nEOF\n"
+    assert output.stdout == expected_output
+
+def test_nested_for_loop():
+    output = sp.run(["./eval_token", "for i in 1 2 3; do for j in 1 2 3; do echo $i $j; done; done"], capture_output=True, text=True)
+    expected_output = "for\nword\nin\nword\nword\nword\n;\ndo\nfor\nword\nin\nword\nword\nword\n;\ndo\nword\nword\nwordg\n;\ndone\n;\ndone\nEOF\n"
+    assert output.stdout == expected_output
+
+def test_nested_while_loop():
+    output = sp.run(["./eval_token", "while true; do while true; do echo loop; done; done"], capture_output=True, text=True)
+    expected_output = "while\nword\n;\ndo\nwhile\nword\n;\ndo\nword\nword\n;\ndone\n;\ndone\nEOF\n"
+    assert output.stdout == expected_output
+
+def test_nested_until_loop():
+    output = sp.run(["./eval_token", "until false; do until false; do echo loop; done; done"], capture_output=True, text=True)
+    expected_output = "until\nword\n;\ndo\nuntil\nword\n;\ndo\nword\nword\n;\ndone\n;\ndone\nEOF\n"
     assert output.stdout == expected_output

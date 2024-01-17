@@ -8,7 +8,9 @@ char *tab[] = {
     [TOKEN_IF] = "if",       [TOKEN_ELSE] = "else",  [TOKEN_ELIF] = "elif",
     [TOKEN_THEN] = "then",   [TOKEN_QUOTE] = "'",    [TOKEN_WORD] = "word",
     [TOKEN_SEMICOLON] = ";", [TOKEN_FI] = "fi",      [TOKEN_EOF] = "EOF",
-    [TOKEN_EOL] = "\n",      [TOKEN_ERROR] = "error"
+    [TOKEN_EOL] = "\n",      [TOKEN_DO] = "do", [TOKEN_DONE] = "done",
+    [TOKEN_FOR] = "for",    [TOKEN_IN] = "in",      [TOKEN_WHILE] = "while",
+    [TOKEN_PIPE] = "|",     [TOKEN_UNTIL] = "until", [TOKEN_REDIRECTION] = "redirection"
 };
 
 int main(int argc, char *argv[])

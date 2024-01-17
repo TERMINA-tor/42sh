@@ -59,7 +59,6 @@ char *get_input(int argc, char **argv)
         input = realloc(input, input_size * sizeof(char));
         memcpy(input + input_size - a, buffer, a);
     } while (a > 0);
-    
     input = realloc(input, input_size + 1);
     input[input_size] = 0;
     fclose(fd);

@@ -6,8 +6,8 @@
 
 enum parser_status
 {
-        PARSER_OK,
-        PARSER_UNEXPECTED_TOKEN,
+    PARSER_OK,
+    PARSER_UNEXPECTED_TOKEN,
 };
 
 /**
