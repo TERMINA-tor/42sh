@@ -47,6 +47,8 @@ static enum token_type get_token_type(char *value)
                                          { TOKEN_FOR, "for" },
                                          { TOKEN_DO, "do" },
                                          { TOKEN_DONE, "done" },
+					 { TOKEN_QUOTE, "\'"},
+					 { TOKEN_DQUOTE, "\""},
                                          { TOKEN_AND, "&&" },
                                          { TOKEN_OR, "||" },
                                          { TOKEN_REDIRECT_INPUT, "<" },
@@ -70,13 +72,15 @@ struct token get_next_token(struct lexer *lexer)
     char *token_value = NULL; // its value
     char curr = read_from_input(lexer); // reads the first character
     size_t value_length = 0;
-    while (curr == ' ') // skip all white spaces
+    while (curr == ' ' || curr == '\t') // skip all white spaces
         curr = read_from_input(lexer);
 
     while (is_delimitor(curr)) // try to read the next special token
     {
         if (!append_to_string(token_value, curr, value_length))
             goto error;
+	if (curr = '\'', curr == '\"')
+		break;
         value_length++;
         curr = read_from_input(lexer);
     }
@@ -90,7 +94,7 @@ struct token get_next_token(struct lexer *lexer)
             curr = read_from_input(lexer);
         }
     }
-    if (!append_to_string(token_value, curr, 0))
+    if (!append_to_string(token_value, curr, value_length))
         goto error;
 
     tok.type = get_token_type(token_value); // get the token type using a LUT

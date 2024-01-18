@@ -18,6 +18,7 @@ enum token_type
     TOKEN_DO,
     TOKEN_DONE,
     TOKEN_QUOTE,
+    TOKEN_DQUOTE,
     TOKEN_WORD,
     TOKEN_SEMICOLON,
     TOKEN_EOF,
