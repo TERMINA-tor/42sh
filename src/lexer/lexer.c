@@ -17,9 +17,9 @@ static char read_from_input(struct lexer *lexer)
     lexer->offset++;
 }
 
-static int is_delimitor(char c)
+static int is_operator(char c)
 {
-    char *delimitors = "&|\'\"<>";
+    char *delimitors = "&|<>";
     for (int i = 0; i < 6; i++)
     {
         if (delimitors[i] == c)
@@ -43,12 +43,10 @@ static enum token_type get_token_type(char *value)
                                          { TOKEN_ELIF, "elif" },
                                          { TOKEN_FI, "fi" },
                                          { TOKEN_WHILE, "while" },
-                                         { TOKEN_UNTILL, "untill" },
+                                         { TOKEN_UNTIL, "until" },
                                          { TOKEN_FOR, "for" },
                                          { TOKEN_DO, "do" },
                                          { TOKEN_DONE, "done" },
-					 { TOKEN_QUOTE, "\'"},
-					 { TOKEN_DQUOTE, "\""},
                                          { TOKEN_AND, "&&" },
                                          { TOKEN_OR, "||" },
                                          { TOKEN_REDIRECT_INPUT, "<" },
@@ -75,26 +73,27 @@ struct token get_next_token(struct lexer *lexer)
     while (curr == ' ' || curr == '\t') // skip all white spaces
         curr = read_from_input(lexer);
 
-    while (is_delimitor(curr)) // try to read the next special token
+    while (is_operator(curr)) // try to read the next special token
     {
         if (!append_to_string(token_value, curr, value_length))
             goto error;
-	if (curr = '\'', curr == '\"')
-		break;
         value_length++;
         curr = read_from_input(lexer);
     }
     if (!token_value) // in case no delimitor was found
     {
-        while (!is_delimitor(curr)) // read the next word
+        while ((curr != EOF) && (!is_operator(curr)) 
+              && (lexer->in_quotes || !is_delimitor(curr))) // read the next word
         {
             if (!append_to_string(token_value, curr, value_length))
                 goto error;
+            if (curr == '\"')
+                lexer->in_quotes ^= 1;
             value_length++;
             curr = read_from_input(lexer);
         }
     }
-    if (!append_to_string(token_value, curr, value_length))
+    if (!append_to_string(token_value, 0, value_length))
         goto error;
 
     tok.type = get_token_type(token_value); // get the token type using a LUT
