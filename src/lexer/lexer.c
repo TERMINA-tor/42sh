@@ -35,27 +35,27 @@ static char *append_to_string(char *string, char c, size_t len)
     return string;
 }
 
-static get_token_type(char *value)
+static enum token_type get_token_type(char *value)
 {
-    const lookuptable table[] = { { TOKEN_IF, "if" },
-                                  { TOKEN_ELSE, "else" },
-                                  { TOKEN_THEN, "then" },
-                                  { TOKEN_ELIF, "elif" },
-                                  { TOKEN_FI, "fi" },
-                                  { TOKEN_WHILE, "while" },
-                                  { TOKEN_UNTILL, "untill" },
-                                  { TOKEN_FOR, "for" },
-                                  { TOKEN_DO, "do" },
-                                  { TOKEN_DONE, "done" },
-                                  { TOKEN_AND, "&&" },
-                                  { TOKEN_OR, "||" },
-                                  { TOKEN_REDIRECT_INPUT, "<" },
-                                  { TOKEN_REDIRECT_OUTPUT, "<" },
-                                  { TOKEN_APPEND_OUTPUT, ">>" },
-                                  { TOKEN_AMPREDIR_OUTPUT, ">&" },
-                                  { TOKEN_AMPREDIR_INPUT, "<&" },
-                                  { TOKEN_FORCE_OUTPUT_REDIR, ">|" } };
-    size_t table_length = sizeof(table) / sizeof(lookuptable);
+    const struct lookuptable table[] = { { TOKEN_IF, "if" },
+                                         { TOKEN_ELSE, "else" },
+                                         { TOKEN_THEN, "then" },
+                                         { TOKEN_ELIF, "elif" },
+                                         { TOKEN_FI, "fi" },
+                                         { TOKEN_WHILE, "while" },
+                                         { TOKEN_UNTILL, "untill" },
+                                         { TOKEN_FOR, "for" },
+                                         { TOKEN_DO, "do" },
+                                         { TOKEN_DONE, "done" },
+                                         { TOKEN_AND, "&&" },
+                                         { TOKEN_OR, "||" },
+                                         { TOKEN_REDIRECT_INPUT, "<" },
+                                         { TOKEN_REDIRECT_OUTPUT, "<" },
+                                         { TOKEN_APPEND_OUTPUT, ">>" },
+                                         { TOKEN_AMPREDIR_OUTPUT, ">&" },
+                                         { TOKEN_AMPREDIR_INPUT, "<&" },
+                                         { TOKEN_FORCE_OUTPUT_REDIR, ">|" } };
+    size_t table_length = sizeof(table) / sizeof(struct lookuptable);
     for (size_t i = 0; i < table_length; i++)
     {
         if (!strcmp(table[i].value, value))
@@ -69,39 +69,41 @@ struct token get_next_token(struct lexer *lexer)
     struct token tok; // the token to be returned
     char *token_value = NULL; // its value
     char curr = read_from_input(lexer); // reads the first character
-
+    size_t value_length = 0;
     while (curr == ' ') // skip all white spaces
         curr = read_from_input(lexer);
 
-    while (is_delimitor(c)) // try to read the next special token
+    while (is_delimitor(curr)) // try to read the next special token
     {
-        if (!append_to_string(token_value, c))
+        if (!append_to_string(token_value, curr, value_length))
             goto error;
-        c = read_from_intput(lexer);
+        value_length++;
+        curr = read_from_input(lexer);
     }
     if (!token_value) // in case no delimitor was found
     {
-        while (!is_delimitor(c)) // read the next word
+        while (!is_delimitor(curr)) // read the next word
         {
-            if (!append_tok_string(token_value, c))
+            if (!append_to_string(token_value, curr, value_length))
                 goto error;
-            c = read_from_input(lexer);
+            value_length++;
+            curr = read_from_input(lexer);
         }
     }
-    if (!append_to_string(token_value, 0))
+    if (!append_to_string(token_value, curr, 0))
         goto error;
 
-    tok.type = get_token_type(value); // get the token type using a LUT
-    if (tok.type == TOKEN_COMMAND || tok.type == TOKEN_WORD)
+    tok.type = get_token_type(token_value); // get the token type using a LUT
+    if (tok.type == TOKEN_WORD)
     {
         tok.value = token_value;
     }
     else
-        free(value);
+        free(token_value);
     return tok;
 
 error:
     fprintf(stderr, "./42sh: failed to allocate memory\n");
     tok.type = TOKEN_ERROR;
-    return token;
+    return tok;
 }

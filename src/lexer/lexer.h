@@ -1,7 +1,9 @@
 #ifndef TOKEN_H
 #define TOKEN_H
 
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 enum token_type
 {
@@ -10,11 +12,24 @@ enum token_type
     TOKEN_ELIF,
     TOKEN_THEN,
     TOKEN_FI,
+    TOKEN_WHILE,
+    TOKEN_UNTILL,
+    TOKEN_FOR,
+    TOKEN_DO,
+    TOKEN_DONE,
     TOKEN_QUOTE,
     TOKEN_WORD,
     TOKEN_SEMICOLON,
     TOKEN_EOF,
     TOKEN_EOL,
+    TOKEN_OR,
+    TOKEN_AND,
+    TOKEN_REDIRECT_INPUT,
+    TOKEN_REDIRECT_OUTPUT,
+    TOKEN_APPEND_OUTPUT,
+    TOKEN_AMPREDIR_OUTPUT,
+    TOKEN_AMPREDIR_INPUT,
+    TOKEN_FORCE_OUTPUT_REDIR,
     TOKEN_ERROR
 };
 
@@ -34,21 +49,20 @@ struct lexer
 // lookuptable structure
 struct lookuptable
 {
-    enum token token_type; // type of the token
+    enum token_type token_type; // type of the token
     char *value; // the value associated to it
-}
+};
 
 /*
  * returns a dynamically allocated lexer structure
  */
-struct lexer *
-init_lexer(FILE *fd)
+struct lexer *init_lexer(FILE *fd);
 
-    /*
-     * returns the next token
-     * this function does not modify the offset
-     */
-    struct token lexer_peek(struct lexer *lexer);
+/*
+ * returns the next token
+ * this function does not modify the offset
+ */
+struct token lexer_peek(struct lexer *lexer);
 
 /*
  * returns the next token
