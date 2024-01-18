@@ -1,6 +1,8 @@
 #ifndef TOKEN_H
 #define TOKEN_H
 
+#include <stdlib.h>
+
 enum token_type
 {
     TOKEN_IF,
@@ -29,11 +31,24 @@ struct lexer
     size_t offset; // how many characters have been read
 };
 
+// lookuptable structure
+struct lookuptable
+{
+    enum token token_type; // type of the token
+    char *value; // the value associated to it
+}
+
 /*
- * returns the next token
- * this function does not modify the offset
+ * returns a dynamically allocated lexer structure
  */
-struct token lexer_peek(struct lexer *lexer);
+struct lexer *
+init_lexer(FILE *fd)
+
+    /*
+     * returns the next token
+     * this function does not modify the offset
+     */
+    struct token lexer_peek(struct lexer *lexer);
 
 /*
  * returns the next token
