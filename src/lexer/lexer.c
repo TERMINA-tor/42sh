@@ -11,33 +11,63 @@ struct lexer *init_lexer(FILE *fd)
     return lexer;
 }
 
+void lexer_free(struct lexer *lexer)
+{
+    fclose(lexer->fd);
+    free(lexer);
+}
+
+static struct Dstring *Dstring_new(void)
+{
+    return calloc(1, sizeof(struct Dstring));
+}
+
+static struct Dstring *Dstring_append(struct Dstring *str, char c)
+{
+    str->value = realloc(str->value, str->size + 1);
+    str->value[str->size] = c;
+    str->size++;
+}
+
+static void Dstring_free(struct Dstring *str)
+{
+    free(str->value);
+    free(str);
+}
+
 static char read_from_input(struct lexer *lexer)
 {
     char curr = fgetc(lexer->fd);
     lexer->offset++;
 }
 
+static void push_output(char c, struct lexer *lexer)
+{
+    ungetc(c, lexer->fd);
+    lexer->offset--;
+}
+
 static int is_operator(char c)
 {
-    char *delimitors = "&|<>";
-    for (int i = 0; i < 6; i++)
+    char *operators = "&|<>";
+    for (size_t i = 0; operators[i]; i++)
     {
-        if (delimitors[i] == c)
+        if (c == operators[i])
             return 1;
     }
     return 0;
 }
 
-static char *append_to_string(char *string, char c, size_t len)
+static int is_blank(char c)
 {
-    string = realloc(string, (len + 1) * sizeof(char));
-    string[len] = c;
-    return string;
+    return (c == '\r') || (c == '\t') || (c == ' ');
 }
 
 static enum token_type get_token_type(char *value)
 {
-    const struct lookuptable table[] = { { TOKEN_IF, "if" },
+    const struct lookuptable table[] = { { TOKEN_EOF, "" },
+                                         { TOKEN_EOL, "\n" },
+                                         { TOKEN_IF, "if" },
                                          { TOKEN_ELSE, "else" },
                                          { TOKEN_THEN, "then" },
                                          { TOKEN_ELIF, "elif" },
@@ -64,50 +94,118 @@ static enum token_type get_token_type(char *value)
     return TOKEN_WORD;
 }
 
+static int handle_dollar(struct lexer *lexer, struct Dstring *value)
+{
+    char tmp = read_from_input(lexer);
+    if (tmp != '{')
+    {
+        push_output('{', lexer);
+        return 0;
+    }
+    while (tmp != EOF && tmp != '}')
+    {
+        Dstring_append(value, tmp);
+    }
+    if (tmp == '}')
+        push_output('}', lexer);
+    return 1;
+}
+
+static void handle_comment(struct lexer *lexer)
+{
+    char tmp = read_from_input(lexer);
+    while (tmp != '\n' && tmp != EOF)
+        tmp = read_from_input(lexer);
+    if (tmp == '\n')
+        push_output('\n', lexer);
+}
+
+static void get_next(struct lexer *lexer, struct Dstring *value)
+{
+    char previous = -1; // previous character
+    char curr = '|'; // in case the first char is an operator
+    int is_quoted = 0;
+    while (curr != EOF)
+    {
+        previous = curr;
+        curr = read_from_input(lexer);
+        if (is_operator(previous))
+        {
+            if (is_operator(curr) && (!is_quoted))
+                Dstring_append(value, curr);
+            else
+            {
+                push_output(curr, lexer);
+                break;
+            }
+        }
+        else if (curr == '\\')
+        {
+            char tmp = read_from_input(lexer);
+            if (tmp != '\n' && (!is_quoted))
+                push_output(tmp, lexer); // \\n = line continuation
+        }
+        else if (curr == '\'' || curr == '\"')
+        {
+            is_quoted ^= 1;
+            Dstring_append(value, curr);
+        }
+        else if ((curr == '$') && (!is_quoted))
+        {
+            Dstring_append(value, curr);
+            if (handle_dollar(lexer, value))
+                break;
+        }
+        else if ((!is_quoted) && is_operator(curr))
+        {
+            push_output(curr, lexer);
+            break;
+        }
+        else if ((!is_quoted) && is_blank(curr))
+        {
+            if (previous != -1)
+                break;
+        }
+        else if ((!is_operator(curr)))
+            Dstring_append(value, curr);
+        else if (curr == '#')
+            handle_comment(lexer);
+        else
+            Dstring_append(value, curr);
+    }
+    Dstring_append(value, 0);
+}
+
 struct token get_next_token(struct lexer *lexer)
 {
-    struct token tok; // the token to be returned
-    char *token_value = NULL; // its value
-    char curr = read_from_input(lexer); // reads the first character
-    size_t value_length = 0;
-    while (curr == ' ' || curr == '\t') // skip all white spaces
-        curr = read_from_input(lexer);
+    struct Dstring *token_value = Dstring_new();
+    get_next(lexer, token_value);
 
-    while (is_operator(curr)) // try to read the next special token
+    struct token new_token;
+    new_token.type = get_token_type(token_value->value);
+    if (new_token.type != TOKEN_WORD)
     {
-        if (!append_to_string(token_value, curr, value_length))
-            goto error;
-        value_length++;
-        curr = read_from_input(lexer);
-    }
-    if (!token_value) // in case no delimitor was found
-    {
-        while (
-            (curr != EOF) && (!is_operator(curr))
-            && (lexer->in_quotes || !is_delimitor(curr))) // read the next word
-        {
-            if (!append_to_string(token_value, curr, value_length))
-                goto error;
-            if (curr == '\"')
-                lexer->in_quotes ^= 1;
-            value_length++;
-            curr = read_from_input(lexer);
-        }
-    }
-    if (!append_to_string(token_value, 0, value_length))
-        goto error;
-
-    tok.type = get_token_type(token_value); // get the token type using a LUT
-    if (tok.type == TOKEN_WORD)
-    {
-        tok.value = token_value;
+        Dstring_free(token_value);
     }
     else
         free(token_value);
-    return tok;
+    return new_token;
+}
 
-error:
-    fprintf(stderr, "./42sh: failed to allocate memory\n");
-    tok.type = TOKEN_ERROR;
+struct token lexer_peek(struct lexer *lexer)
+{
+    size_t old_offset = lexer->offset;
+
+    struct token tok = get_next_token(lexer);
+    if (tok.type == TOKEN_WORD)
+        free(tok.value);
+
+    size_t offset = lexer->offset - old_offset;
+    fseek(lexer->fd, -offset, SEEK_CUR);
     return tok;
+}
+
+struct token lexer_pop(struct lexer *lexer)
+{
+    return get_next_token(lexer);
 }

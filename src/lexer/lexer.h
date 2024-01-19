@@ -1,5 +1,5 @@
-#ifndef TOKEN_H
-#define TOKEN_H
+#ifndef LEXER_H
+#define LEXER_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,12 +13,10 @@ enum token_type
     TOKEN_THEN,
     TOKEN_FI,
     TOKEN_WHILE,
-    TOKEN_UNTILL,
+    TOKEN_UNTIL,
     TOKEN_FOR,
     TOKEN_DO,
     TOKEN_DONE,
-    TOKEN_QUOTE,
-    TOKEN_DQUOTE,
     TOKEN_WORD,
     TOKEN_SEMICOLON,
     TOKEN_EOF,
@@ -54,10 +52,23 @@ struct lookuptable
     char *value; // the value associated to it
 };
 
+// structure representing a string
+struct Dstring
+{
+    char *value;
+    size_t size;
+};
+
 /*
  * returns a dynamically allocated lexer structure
  */
 struct lexer *init_lexer(FILE *fd);
+
+/*
+ * free a lexer structure
+ */
+
+void lexer_free(struct lexer *lexer);
 
 /*
  * returns the next token
@@ -71,4 +82,4 @@ struct token lexer_peek(struct lexer *lexer);
  */
 struct token lexer_pop(struct lexer *lexer);
 
-#endif /* ! TOKEN_H */
+#endif /* ! LEXER_H */
