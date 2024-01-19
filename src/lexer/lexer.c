@@ -82,8 +82,9 @@ struct token get_next_token(struct lexer *lexer)
     }
     if (!token_value) // in case no delimitor was found
     {
-        while ((curr != EOF) && (!is_operator(curr)) 
-              && (lexer->in_quotes || !is_delimitor(curr))) // read the next word
+        while (
+            (curr != EOF) && (!is_operator(curr))
+            && (lexer->in_quotes || !is_delimitor(curr))) // read the next word
         {
             if (!append_to_string(token_value, curr, value_length))
                 goto error;
