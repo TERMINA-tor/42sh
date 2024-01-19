@@ -101,8 +101,8 @@ static int handle_dollar(struct lexer *lexer, struct Dstring *value)
     char tmp = read_from_input(lexer);
     if (tmp != '{')
     {
-        push_output('{', lexer);
-        return 0;
+        Dstring_append(value, tmp);
+        return 1;
     }
     while (tmp != EOF && tmp != '}')
     {
@@ -129,15 +129,15 @@ static void get_next(struct lexer *lexer, struct Dstring *value)
     int is_quoted = 0;
     int is_comment = 0;
     while (curr != EOF)
-    { 
-        if (is_comment) // add this block
+    {
+        if (is_comment)
         {
             if (curr == '\n' || curr == EOF)
                 is_comment = 0;
             curr = read_from_input(lexer);
             continue;
         }
-        if (curr == '#') // modify this block
+        if (curr == '#')
         {
             is_comment = 1;
             curr = read_from_input(lexer);
