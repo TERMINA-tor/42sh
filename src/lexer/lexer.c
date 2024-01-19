@@ -127,22 +127,22 @@ static void get_next(struct lexer *lexer, struct Dstring *value)
     char previous = -1;
     char curr = read_from_input(lexer);
     int is_quoted = 0;
-    int is_comment = 0;
+    // int is_comment = 0;
     while (curr != EOF)
     {
-        if (is_comment)
-        {
-            if (curr == '\n' || curr == EOF)
-                is_comment = 0;
-            curr = read_from_input(lexer);
-            continue;
-        }
-        if (curr == '#')
-        {
-            is_comment = 1;
-            curr = read_from_input(lexer);
-            continue;
-        }
+        // if (is_comment)
+        // {
+        //     if (curr == '\n' || curr == EOF)
+        //         is_comment = 0;
+        //     curr = read_from_input(lexer);
+        //     continue;
+        // }
+        // if (curr == '#')
+        // {
+        //     is_comment = 1;
+        //     curr = read_from_input(lexer);
+        //     continue;
+        // }
         if (is_operator(previous))
         {
             if (is_operator(curr) && (!is_quoted))
@@ -184,7 +184,7 @@ static void get_next(struct lexer *lexer, struct Dstring *value)
             if (previous != -1)
                 break;
         }
-        else if ((!is_operator(curr)))
+        else if ((!is_operator(curr)) && curr != '#')
             Dstring_append(value, curr);
         else if (curr == '#')
             handle_comment(lexer);

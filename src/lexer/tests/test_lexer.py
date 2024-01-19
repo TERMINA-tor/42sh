@@ -57,5 +57,5 @@ def test_pipes():
     assert output == ['cat', 'file.txt', '|', 'grep', 'hello', 'EOF']
 
 def test_comments():
-    output = run_lexer('echo hello # this is a comment')
+    output = run_lexer('echo hello#this is a comment')
     assert output == ['echo', 'hello', 'EOF']

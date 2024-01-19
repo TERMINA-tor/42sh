@@ -1,5 +1,5 @@
-#include "lexer.h"
-#include "../input/input.h"
+#include "../lexer.h"
+#include "../../input/input.h"
 
 void lut(struct token t)
 {
@@ -7,6 +7,7 @@ void lut(struct token t)
                                          { TOKEN_EOL, "\n" },
                                          { TOKEN_IF, "if" },
                                          { TOKEN_ELSE, "else" },
+                                         { TOKEN_SEMICOLON, ";"},
                                          { TOKEN_THEN, "then" },
                                          { TOKEN_ELIF, "elif" },
                                          { TOKEN_FI, "fi" },
