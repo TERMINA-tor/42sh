@@ -49,7 +49,7 @@ static void push_output(char c, struct lexer *lexer)
 
 static int is_operator(char c)
 {
-    char *operators = "&|<>";
+    char *operators = "&|<>;";
     for (size_t i = 0; operators[i]; i++)
     {
         if (c == operators[i])
