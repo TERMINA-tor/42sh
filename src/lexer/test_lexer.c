@@ -3,7 +3,7 @@
 
 void lut(struct token t)
 {
-    const struct lookuptable table[] = { { TOKEN_EOF, "" },
+    const struct lookuptable table[] = { { TOKEN_EOF, "EOF" },
                                          { TOKEN_EOL, "\n" },
                                          { TOKEN_IF, "if" },
                                          { TOKEN_ELSE, "else" },
@@ -33,6 +33,7 @@ void lut(struct token t)
 	}
     }
     printf("%s\n", t.value);
+    free(t.value);
 }
 
 
