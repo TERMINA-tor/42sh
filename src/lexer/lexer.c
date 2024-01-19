@@ -8,6 +8,7 @@ struct lexer *init_lexer(FILE *fd)
         fprintf(stderr, "./42sh: failed to allocate memory\n");
         return NULL;
     }
+    lexer->fd = fd;
     return lexer;
 }
 
@@ -22,7 +23,7 @@ static struct Dstring *Dstring_new(void)
     return calloc(1, sizeof(struct Dstring));
 }
 
-static struct Dstring *Dstring_append(struct Dstring *str, char c)
+static void Dstring_append(struct Dstring *str, char c)
 {
     str->value = realloc(str->value, str->size + 1);
     str->value[str->size] = c;
@@ -39,6 +40,7 @@ static char read_from_input(struct lexer *lexer)
 {
     char curr = fgetc(lexer->fd);
     lexer->offset++;
+    return curr;
 }
 
 static void push_output(char c, struct lexer *lexer)
@@ -123,12 +125,10 @@ static void handle_comment(struct lexer *lexer)
 static void get_next(struct lexer *lexer, struct Dstring *value)
 {
     char previous = -1; // previous character
-    char curr = '|'; // in case the first char is an operator
+    char curr = read_from_input(lexer); // in case the first char is an operator
     int is_quoted = 0;
     while (curr != EOF)
-    {
-        previous = curr;
-        curr = read_from_input(lexer);
+    { 
         if (is_operator(previous))
         {
             if (is_operator(curr) && (!is_quoted))
@@ -160,6 +160,7 @@ static void get_next(struct lexer *lexer, struct Dstring *value)
         {
             push_output(curr, lexer);
             break;
+	    Dstring_append(value, curr);
         }
         else if ((!is_quoted) && is_blank(curr))
         {
@@ -172,6 +173,9 @@ static void get_next(struct lexer *lexer, struct Dstring *value)
             handle_comment(lexer);
         else
             Dstring_append(value, curr);
+	
+       	previous = curr;
+        curr = read_from_input(lexer);
     }
     Dstring_append(value, 0);
 }
@@ -188,7 +192,10 @@ struct token get_next_token(struct lexer *lexer)
         Dstring_free(token_value);
     }
     else
+    {
+	new_token.value = token_value->value;
         free(token_value);
+    }
     return new_token;
 }
 
