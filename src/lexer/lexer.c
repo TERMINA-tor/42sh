@@ -124,11 +124,25 @@ static void handle_comment(struct lexer *lexer)
 
 static void get_next(struct lexer *lexer, struct Dstring *value)
 {
-    char previous = -1; // previous character
-    char curr = read_from_input(lexer); // in case the first char is an operator
+    char previous = -1;
+    char curr = read_from_input(lexer);
     int is_quoted = 0;
+    int is_comment = 0;
     while (curr != EOF)
     { 
+        if (is_comment) // add this block
+        {
+            if (curr == '\n' || curr == EOF)
+                is_comment = 0;
+            curr = read_from_input(lexer);
+            continue;
+        }
+        if (curr == '#') // modify this block
+        {
+            is_comment = 1;
+            curr = read_from_input(lexer);
+            continue;
+        }
         if (is_operator(previous))
         {
             if (is_operator(curr) && (!is_quoted))
@@ -143,7 +157,7 @@ static void get_next(struct lexer *lexer, struct Dstring *value)
         {
             char tmp = read_from_input(lexer);
             if (tmp != '\n' && (!is_quoted))
-                push_output(tmp, lexer); // \\n = line continuation
+                push_output(tmp, lexer);
         }
         else if (curr == '\'' || curr == '\"')
         {
@@ -158,9 +172,12 @@ static void get_next(struct lexer *lexer, struct Dstring *value)
         }
         else if ((!is_quoted) && is_operator(curr))
         {
-            push_output(curr, lexer);
-            break;
-	    Dstring_append(value, curr);
+            if (previous != -1)
+            {
+                push_output(curr, lexer);
+                break;
+            }
+            Dstring_append(value, curr);
         }
         else if ((!is_quoted) && is_blank(curr))
         {
@@ -173,8 +190,8 @@ static void get_next(struct lexer *lexer, struct Dstring *value)
             handle_comment(lexer);
         else
             Dstring_append(value, curr);
-	
-       	previous = curr;
+    
+        previous = curr;
         curr = read_from_input(lexer);
     }
     Dstring_append(value, 0);
