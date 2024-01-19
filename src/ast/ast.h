@@ -1,38 +1,40 @@
 #ifndef AST_H
 #define AST_H
 
-#include <stdlib.h>
+#include <stddef.h>
 
 enum ast_type
 {
     AST_IF,
-    AST_ELIF,
-    AST_WORD,
-    AST_COMMAND
+    AST_COMMAND,
+    AST_SEQUENCE
 };
 
-struct ast
-{
-    enum ast_type type; ///< node type
-    struct ast **children; ///< list of children
-    size_t nbchildren; ///< number of children
-    char *value; ///< value of the current token (can be a word or a command)
+struct ast {
+    enum ast_type type;
 };
 
-/**
- ** \brief Allocates a node with the given type
- */
-struct ast *ast_new(enum ast_type type);
+struct ast_cmd {
+    struct ast base;
+    char **words; // NULL terminated char* list */
+};
 
-/**
- ** \brief free the given ast
- */
+struct ast_if {
+    struct ast base;
+    struct ast *condition;  // the condition
+    struct ast *then_body;  // the body of the then clause
+    struct ast *else_body;  // the body of the else, may be NULL
+};
 
-void ast_free(struct ast *ast);
+struct ast_sequence {
+    struct ast base;
+    struct ast **commands;
+    size_t num_commands;
+};
 
-/**
- ** \brief append child to parent->children
- */
-int add_child_ast(struct ast *parent, struct ast *child);
+struct ast_sequence *ast_sequence_init(void);
+struct ast_if *ast_if_init(void);
+struct ast_cmd *ast_cmd_init(void);
+void free_ast(struct ast *node);
 
 #endif
