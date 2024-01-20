@@ -153,3 +153,15 @@ def test_random_12():
     output_lexer = run_command(lexer, "test_random_12")
     output_ref = run_ref("cat", "test_random_12_ref")
     assertion(output_lexer, output_ref.stdout)
+
+def test_blank_mostlty():
+    ouput_lexer = run_command(lexer, "test_mostly_blank")
+    output_ref = run_ref("cat", "test_mostly_blank_ref")
+
+def test_only_blank():
+    ouput_lexer = run_command(lexer, "test_only_blank")
+    output_ref = run_ref("cat", "test_only_blank_ref")
+
+def test_only_blank_and_comments():
+    ouput_lexer = run_command(lexer, "test_blank_and_comments")
+    output_ref = run_ref("cat", "test_blank_and_comments_ref")
