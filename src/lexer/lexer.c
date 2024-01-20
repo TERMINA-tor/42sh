@@ -44,7 +44,7 @@ static int is_operator(char c)
 
 static int is_delimitor(char c)
 {
-    char *delimitors = " #\r\t";
+    char *delimitors = " #\r\t\\";
     for (size_t i = 0; delimitors[i]; i++)
     {
         if (c == delimitors[i])
@@ -95,7 +95,7 @@ static int handle_dollar(struct lexer *lexer, struct Dstring *value)
     char tmp = read_from_input(lexer);
     if (tmp != '{')
     {
-        push_output('{', lexer);
+        push_output(tmp, lexer);
         return 0;
     }
     while (tmp != EOF && tmp != '}')
@@ -116,6 +116,12 @@ static void handle_comment(struct lexer *lexer)
         push_output('\n', lexer);
 }
 
+static char handle_quotes(int *is_quoted, char least_quote, char curr)
+{
+	*is_quoted ^= (least_quote == curr) || least_quote == -1;
+	return *is_quoted ? curr : least_quote;
+}
+
 static void get_next(struct lexer *lexer, struct Dstring *value)
 {
     char previous = -1; // previous character
@@ -124,15 +130,15 @@ static void get_next(struct lexer *lexer, struct Dstring *value)
     int is_quoted = 0;
     while (curr != EOF) // rule 1
     {
-        if (is_operator(previous))
+        if (is_operator(previous) & !is_quoted)
         {
-            if (is_operator(curr) && (!is_quoted)) // rule 2
+            if (is_operator(curr)) // rule 2
                 Dstring_append(value, curr);
             else // rule 3
             {
                 push_output(curr, lexer);
                 break;
-            }
+            } 
         }
         else if (curr == '\\') // rule 4_1
         {
@@ -140,11 +146,9 @@ static void get_next(struct lexer *lexer, struct Dstring *value)
             if (tmp != '\n' && (!is_quoted))
                 push_output(tmp, lexer); // \\n = line continuation
         }
-        else if (curr == '\'' || curr == '\"') // rule 4_2
+        else if ((curr == '\'' || curr == '\"') && !is_delimitor(previous)) // rule 4_2
         {
-            is_quoted ^= (least_quote == curr);
-	    if (is_quoted)
-		    least_quote = curr;
+	    least_quote = handle_quotes(&is_quoted, least_quote, curr);
             Dstring_append(value, curr);
         }
         else if ((curr == '$') && (!is_quoted)) // rule_5
@@ -153,7 +157,7 @@ static void get_next(struct lexer *lexer, struct Dstring *value)
             if (handle_dollar(lexer, value))
                 break;
         }
-        else if ((!is_quoted) && is_operator(curr)) // rule_6
+        else if ((!is_quoted) && is_operator(curr) && !is_delimitor(previous)) // rule_6
         {
             if (previous == -1)
                 Dstring_append(value, curr);
@@ -170,7 +174,7 @@ static void get_next(struct lexer *lexer, struct Dstring *value)
         }
         else if ((!is_operator(curr)) && (!is_delimitor(curr)))
             Dstring_append(value, curr);
-        else if (curr == '#')
+        else if (curr == '#' && !is_quoted)
 	   handle_comment(lexer);
         else
             Dstring_append(value, curr);
