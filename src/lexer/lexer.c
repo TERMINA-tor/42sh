@@ -14,12 +14,15 @@ struct lexer *init_lexer(FILE *fd)
 
 void lexer_free(struct lexer *lexer)
 {
-    fclose(lexer->fd);
+    if (lexer->fd)
+        fclose(lexer->fd);
     free(lexer);
 }
 
 static char read_from_input(struct lexer *lexer)
 {
+    if (!lexer->fd)
+        return EOF;
     char curr = fgetc(lexer->fd);
     lexer->offset++;
     return curr;
@@ -58,6 +61,11 @@ static int is_blank(char c)
     return (c == '\r') || (c == '\t') || (c == ' ');
 }
 
+static int is_quote(char c)
+{
+    return (c == '\'') || (c == '\"');
+}
+
 static enum token_type get_token_type(char *value)
 {
     const struct lookuptable table[] = { { TOKEN_EOF, "" },
@@ -74,9 +82,10 @@ static enum token_type get_token_type(char *value)
                                          { TOKEN_DONE, "done" },
                                          { TOKEN_AND, "&&" },
                                          { TOKEN_OR, "||" },
+                                         { TOKEN_PIPE, "|" },
                                          { TOKEN_SEMICOLON, ";" },
                                          { TOKEN_REDIRECT_INPUT, "<" },
-                                         { TOKEN_REDIRECT_OUTPUT, "<" },
+                                         { TOKEN_REDIRECT_OUTPUT, ">" },
                                          { TOKEN_APPEND_OUTPUT, ">>" },
                                          { TOKEN_AMPREDIR_OUTPUT, ">&" },
                                          { TOKEN_AMPREDIR_INPUT, "<&" },
@@ -118,37 +127,38 @@ static void handle_comment(struct lexer *lexer)
 
 static char handle_quotes(int *is_quoted, char least_quote, char curr)
 {
-	*is_quoted ^= (least_quote == curr) || least_quote == -1;
-	return *is_quoted ? curr : least_quote;
+    *is_quoted ^= (least_quote == curr) || least_quote == -1;
+    return *is_quoted ? curr : least_quote;
 }
 
 static void get_next(struct lexer *lexer, struct Dstring *value)
 {
     char previous = -1; // previous character
-    char curr = read_from_input(lexer); // in case the first char is an operator
+    char curr = read_from_input(lexer);
     char least_quote = -1; // keeps track of the last quote type (\' | \")
     int is_quoted = 0;
     while (curr != EOF) // rule 1
     {
         if (is_operator(previous) & !is_quoted)
         {
-            if (is_operator(curr)) // rule 2
+            if (is_operator(curr) && curr != '\n' && previous != '\n') // rule 2
                 Dstring_append(value, curr);
             else // rule 3
             {
                 push_output(curr, lexer);
                 break;
-            } 
+            }
         }
-        else if (curr == '\\') // rule 4_1
+        else if (curr == '\\' && !is_quoted) // rule 4_1
         {
             char tmp = read_from_input(lexer);
             if (tmp != '\n' && (!is_quoted))
                 push_output(tmp, lexer); // \\n = line continuation
         }
-        else if ((curr == '\'' || curr == '\"') && !is_delimitor(previous)) // rule 4_2
+        else if ((curr == '\'' || curr == '\"')
+                 && !is_delimitor(previous)) // rule 4_2
         {
-	    least_quote = handle_quotes(&is_quoted, least_quote, curr);
+            least_quote = handle_quotes(&is_quoted, least_quote, curr);
             Dstring_append(value, curr);
         }
         else if ((curr == '$') && (!is_quoted)) // rule_5
@@ -157,7 +167,8 @@ static void get_next(struct lexer *lexer, struct Dstring *value)
             if (handle_dollar(lexer, value))
                 break;
         }
-        else if ((!is_quoted) && is_operator(curr) && !is_delimitor(previous)) // rule_6
+        else if ((!is_quoted) && is_operator(curr)
+                 && !is_delimitor(previous)) // rule_6
         {
             if (previous == -1)
                 Dstring_append(value, curr);
@@ -169,13 +180,13 @@ static void get_next(struct lexer *lexer, struct Dstring *value)
         }
         else if ((!is_quoted) && (is_blank(curr)))
         {
-	    if (previous != -1)
-		    break;
+            if (previous != -1 && previous != ' ')
+                break;
         }
         else if ((!is_operator(curr)) && (!is_delimitor(curr)))
             Dstring_append(value, curr);
-        else if (curr == '#' && !is_quoted)
-	   handle_comment(lexer);
+        else if (curr == '#' && !is_quoted && !is_quote(previous))
+            handle_comment(lexer);
         else
             Dstring_append(value, curr);
 

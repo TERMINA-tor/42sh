@@ -1,0 +1,8 @@
+cat file.txt | echo -ne | sort -b | grep Sife;
+hello world;
+
+
+
+
+              
+;
