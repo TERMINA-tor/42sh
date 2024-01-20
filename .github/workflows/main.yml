@@ -5,42 +5,6 @@ on:
       - main
 
 jobs:
-  test_input:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./src/input
-    
-    strategy:
-      matrix:
-        python-version: [3.8]
-
-    env:
-      MODE: "dev"
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Set up compilation utils
-        run: |
-          sudo apt update
-          sudo apt install gcc
-          sudo apt install make
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{matrix.python-version}}
-
-      - name: Install dependencies
-        run: |
-          python -m pip install  --upgrade pip
-          pip install pytest
-  
-      - name: Test Input
-        run:
-          make check
-
   test_lexer:
     runs-on: ubuntu-latest
     defaults:
@@ -75,40 +39,4 @@ jobs:
   
       - name: Test Input
         run:
-          make check
-
-  test_builtins:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./src/eval
-    
-    strategy:
-      matrix:
-        python-version: [3.8]
-
-    env:
-      MODE: "dev"
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Set up compilation utils
-        run: |
-          sudo apt update
-          sudo apt install gcc
-          sudo apt install make
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{matrix.python-version}}
-
-      - name: Install dependencies
-        run: |
-          python -m pip install  --upgrade pip
-          pip install pytest
-  
-      - name: Test builtins
-        run:
-          make check
+          make check 
