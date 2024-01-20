@@ -59,3 +59,7 @@ def test_pipes():
 def test_comments():
     output = run_lexer('echo hello#this is a comment')
     assert output == ['echo', 'hello', 'EOF']
+
+def test_negation():
+    output = run_lexer('! true')
+    assert output == ['!', 'true', 'EOF']

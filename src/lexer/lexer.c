@@ -8,12 +8,14 @@ struct lexer *init_lexer(FILE *fd)
         fprintf(stderr, "./42sh: failed to allocate memory\n");
         return NULL;
     }
+    lexer->current_token = calloc(1, sizeof(struct token));
     lexer->fd = fd;
     return lexer;
 }
 
 void lexer_free(struct lexer *lexer)
 {
+    free(lexer->current_token);
     fclose(lexer->fd);
     free(lexer);
 }
@@ -51,7 +53,7 @@ static void push_output(char c, struct lexer *lexer)
 
 static int is_operator(char c)
 {
-    char *operators = "&|<>;";
+    char *operators = "&|<>;!";
     for (size_t i = 0; operators[i]; i++)
     {
         if (c == operators[i])
@@ -74,6 +76,8 @@ static enum token_type get_token_type(char *value)
                                          { TOKEN_THEN, "then" },
                                          { TOKEN_ELIF, "elif" },
                                          { TOKEN_FI, "fi" },
+                                         { TOKEN_NOT, "!" },
+                                         { TOKEN_PIPE, "|" },
                                          { TOKEN_WHILE, "while" },
                                          { TOKEN_UNTIL, "until" },
                                          { TOKEN_FOR, "for" },
@@ -127,22 +131,8 @@ static void get_next(struct lexer *lexer, struct Dstring *value)
     char previous = -1;
     char curr = read_from_input(lexer);
     int is_quoted = 0;
-    // int is_comment = 0;
     while (curr != EOF)
     {
-        // if (is_comment)
-        // {
-        //     if (curr == '\n' || curr == EOF)
-        //         is_comment = 0;
-        //     curr = read_from_input(lexer);
-        //     continue;
-        // }
-        // if (curr == '#')
-        // {
-        //     is_comment = 1;
-        //     curr = read_from_input(lexer);
-        //     continue;
-        // }
         if (is_operator(previous))
         {
             if (is_operator(curr) && (!is_quoted))
@@ -210,23 +200,18 @@ struct token get_next_token(struct lexer *lexer)
     }
     else
     {
-	new_token.value = token_value->value;
+	    new_token.value = token_value->value;
         free(token_value);
     }
+    *lexer->current_token = (struct token) { .type = new_token.type, .value = new_token.value }; 
     return new_token;
 }
 
 struct token lexer_peek(struct lexer *lexer)
 {
-    size_t old_offset = lexer->offset;
-
-    struct token tok = get_next_token(lexer);
-    if (tok.type == TOKEN_WORD)
-        free(tok.value);
-
-    size_t offset = lexer->offset - old_offset;
-    fseek(lexer->fd, -offset, SEEK_CUR);
-    return tok;
+    if (!lexer->current_token->type)
+        *lexer->current_token = get_next_token(lexer);
+    return *lexer->current_token;
 }
 
 struct token lexer_pop(struct lexer *lexer)

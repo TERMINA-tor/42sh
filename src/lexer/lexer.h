@@ -7,11 +7,14 @@
 
 enum token_type
 {
+    TOKEN_INIT,
     TOKEN_IF,
     TOKEN_ELSE,
     TOKEN_ELIF,
     TOKEN_THEN,
     TOKEN_FI,
+    TOKEN_NOT,
+    TOKEN_PIPE,
     TOKEN_WHILE,
     TOKEN_UNTIL,
     TOKEN_FOR,
@@ -43,6 +46,7 @@ struct lexer
 {
     FILE *fd; // the file descriptor pointing to the input stream
     size_t offset; // how many characters have been read
+    struct token *current_token; // the current token
 };
 
 // lookuptable structure

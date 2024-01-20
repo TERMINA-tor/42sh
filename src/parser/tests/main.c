@@ -6,18 +6,20 @@
 
 int main(int argc, char **argv)
 {
-    char *input = get_input(argc, argv);
+    FILE *input = get_input(argc, argv);
     if (!input)
 	    return 0;
 
-    struct lexer *lexer = lexer_new(input);
+    struct lexer *lexer = init_lexer(input);
     
     if (!lexer)
 	    return 0;
     
     enum parser_status status = parse_input(lexer);
     if (status != PARSER_OK)
-        printf("Error\n");
+        printf("error\n");
     else
         printf("OK\n");
+
+    lexer_free(lexer);
 }

@@ -11,6 +11,8 @@ void lut(struct token t)
                                          { TOKEN_THEN, "then" },
                                          { TOKEN_ELIF, "elif" },
                                          { TOKEN_FI, "fi" },
+                                         { TOKEN_NOT, "!" },
+                                         { TOKEN_PIPE, "|" },
                                          { TOKEN_WHILE, "while" },
                                          { TOKEN_UNTIL, "until" },
                                          { TOKEN_FOR, "for" },
