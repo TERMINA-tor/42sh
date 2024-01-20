@@ -120,6 +120,7 @@ static void get_next(struct lexer *lexer, struct Dstring *value)
 {
     char previous = -1; // previous character
     char curr = read_from_input(lexer); // in case the first char is an operator
+    char least_quote = -1; // keeps track of the last quote type (\' | \")
     int is_quoted = 0;
     while (curr != EOF) // rule 1
     {
@@ -141,7 +142,9 @@ static void get_next(struct lexer *lexer, struct Dstring *value)
         }
         else if (curr == '\'' || curr == '\"') // rule 4_2
         {
-            is_quoted ^= 1;
+            is_quoted ^= (least_quote == curr);
+	    if (is_quoted)
+		    least_quote = curr;
             Dstring_append(value, curr);
         }
         else if ((curr == '$') && (!is_quoted)) // rule_5
@@ -162,16 +165,13 @@ static void get_next(struct lexer *lexer, struct Dstring *value)
         }
         else if ((!is_quoted) && (is_blank(curr)))
         {
-            if (previous != -1)
-                break;
+	    if (previous != -1)
+		    break;
         }
         else if ((!is_operator(curr)) && (!is_delimitor(curr)))
             Dstring_append(value, curr);
         else if (curr == '#')
-        {
-            handle_comment(lexer);
-            break;
-        }
+	   handle_comment(lexer);
         else
             Dstring_append(value, curr);
 
