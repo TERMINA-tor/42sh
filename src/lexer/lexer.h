@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../utils/Dstring/dstring.h"
+
 enum token_type
 {
     TOKEN_IF,
@@ -50,13 +52,6 @@ struct lookuptable
 {
     enum token_type token_type; // type of the token
     char *value; // the value associated to it
-};
-
-// structure representing a string
-struct Dstring
-{
-    char *value;
-    size_t size;
 };
 
 /*

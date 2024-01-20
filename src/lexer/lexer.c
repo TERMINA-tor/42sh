@@ -18,24 +18,6 @@ void lexer_free(struct lexer *lexer)
     free(lexer);
 }
 
-static struct Dstring *Dstring_new(void)
-{
-    return calloc(1, sizeof(struct Dstring));
-}
-
-static void Dstring_append(struct Dstring *str, char c)
-{
-    str->value = realloc(str->value, str->size + 1);
-    str->value[str->size] = c;
-    str->size++;
-}
-
-static void Dstring_free(struct Dstring *str)
-{
-    free(str->value);
-    free(str);
-}
-
 static char read_from_input(struct lexer *lexer)
 {
     char curr = fgetc(lexer->fd);
@@ -51,10 +33,21 @@ static void push_output(char c, struct lexer *lexer)
 
 static int is_operator(char c)
 {
-    char *operators = "&|<>;";
+    char *operators = "&|<>;\n";
     for (size_t i = 0; operators[i]; i++)
     {
         if (c == operators[i])
+            return 1;
+    }
+    return 0;
+}
+
+static int is_delimitor(char c)
+{
+    char *delimitors = " #\r\t";
+    for (size_t i = 0; delimitors[i]; i++)
+    {
+        if (c == delimitors[i])
             return 1;
     }
     return 0;
@@ -81,6 +74,7 @@ static enum token_type get_token_type(char *value)
                                          { TOKEN_DONE, "done" },
                                          { TOKEN_AND, "&&" },
                                          { TOKEN_OR, "||" },
+                                         { TOKEN_SEMICOLON, ";" },
                                          { TOKEN_REDIRECT_INPUT, "<" },
                                          { TOKEN_REDIRECT_OUTPUT, "<" },
                                          { TOKEN_APPEND_OUTPUT, ">>" },
@@ -127,54 +121,61 @@ static void get_next(struct lexer *lexer, struct Dstring *value)
     char previous = -1; // previous character
     char curr = read_from_input(lexer); // in case the first char is an operator
     int is_quoted = 0;
-    while (curr != EOF)
-    { 
+    while (curr != EOF) // rule 1
+    {
         if (is_operator(previous))
         {
-            if (is_operator(curr) && (!is_quoted))
+            if (is_operator(curr) && (!is_quoted)) // rule 2
                 Dstring_append(value, curr);
-            else
+            else // rule 3
             {
                 push_output(curr, lexer);
                 break;
             }
         }
-        else if (curr == '\\')
+        else if (curr == '\\') // rule 4_1
         {
             char tmp = read_from_input(lexer);
             if (tmp != '\n' && (!is_quoted))
                 push_output(tmp, lexer); // \\n = line continuation
         }
-        else if (curr == '\'' || curr == '\"')
+        else if (curr == '\'' || curr == '\"') // rule 4_2
         {
             is_quoted ^= 1;
             Dstring_append(value, curr);
         }
-        else if ((curr == '$') && (!is_quoted))
+        else if ((curr == '$') && (!is_quoted)) // rule_5
         {
             Dstring_append(value, curr);
             if (handle_dollar(lexer, value))
                 break;
         }
-        else if ((!is_quoted) && is_operator(curr))
+        else if ((!is_quoted) && is_operator(curr)) // rule_6
         {
-            push_output(curr, lexer);
-            break;
-	    Dstring_append(value, curr);
+            if (previous == -1)
+                Dstring_append(value, curr);
+            else if (!is_operator(previous))
+            {
+                push_output(curr, lexer);
+                break;
+            }
         }
-        else if ((!is_quoted) && is_blank(curr))
+        else if ((!is_quoted) && (is_blank(curr)))
         {
             if (previous != -1)
                 break;
         }
-        else if ((!is_operator(curr)))
+        else if ((!is_operator(curr)) && (!is_delimitor(curr)))
             Dstring_append(value, curr);
         else if (curr == '#')
+        {
             handle_comment(lexer);
+            break;
+        }
         else
             Dstring_append(value, curr);
-	
-       	previous = curr;
+
+        previous = curr;
         curr = read_from_input(lexer);
     }
     Dstring_append(value, 0);
@@ -193,7 +194,7 @@ struct token get_next_token(struct lexer *lexer)
     }
     else
     {
-	new_token.value = token_value->value;
+        new_token.value = token_value->value;
         free(token_value);
     }
     return new_token;

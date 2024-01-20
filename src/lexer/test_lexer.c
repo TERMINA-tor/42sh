@@ -1,10 +1,10 @@
-#include "lexer.h"
 #include "../input/input.h"
+#include "lexer.h"
 
 void lut(struct token t)
 {
     const struct lookuptable table[] = { { TOKEN_EOF, "EOF" },
-                                         { TOKEN_EOL, "\n" },
+                                         { TOKEN_EOL, "EOL" },
                                          { TOKEN_IF, "if" },
                                          { TOKEN_ELSE, "else" },
                                          { TOKEN_THEN, "then" },
@@ -14,6 +14,7 @@ void lut(struct token t)
                                          { TOKEN_UNTIL, "until" },
                                          { TOKEN_FOR, "for" },
                                          { TOKEN_DO, "do" },
+                                         { TOKEN_SEMICOLON, ";" },
                                          { TOKEN_DONE, "done" },
                                          { TOKEN_AND, "&&" },
                                          { TOKEN_OR, "||" },
@@ -27,25 +28,24 @@ void lut(struct token t)
     for (size_t i = 0; i < table_length; i++)
     {
         if (table[i].token_type == t.type)
-	{
+        {
             printf("%s\n", table[i].value);
-	    return;
-	}
+            return;
+        }
     }
     printf("%s\n", t.value);
     free(t.value);
 }
 
-
 int main(int argc, char **argv)
 {
-	FILE *fd = get_input(argc, argv);
-	struct lexer *lexer = init_lexer(fd);
-	struct token t;
-	do
-	{
-		t = lexer_pop(lexer);
-		lut(t);
-	} while (t.type != TOKEN_EOF);
-	lexer_free(lexer);
+    FILE *fd = get_input(argc, argv);
+    struct lexer *lexer = init_lexer(fd);
+    struct token t;
+    do
+    {
+        t = lexer_pop(lexer);
+        lut(t);
+    } while (t.type != TOKEN_EOF);
+    lexer_free(lexer);
 }

@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-std=c99 -pedantic -Werror -Wall -Wextra -Wvla -fsanitize=address -g
-DEPENDENCIES= test_lexer.c lexer.c ../input/input.c
+DEPENDENCIES= test_lexer.c lexer.c ../input/input.c ../utils/Dstring/dstring.c
 
 all: test
 
