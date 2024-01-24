@@ -1,14 +1,14 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include "../lexer/lexer.h"
 #include "../ast/ast.h"
 #include "../input/input.h"
+#include "../lexer/lexer.h"
 
 enum parser_status
 {
-	PARSER_OK,
-	PARSER_UNEXPECTED_TOKEN
+    PARSER_OK,
+    PARSER_UNEXPECTED_TOKEN
 };
 
 enum parser_status parse_input(struct ast **ast, struct lexer *lexer);
