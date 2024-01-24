@@ -21,13 +21,13 @@ struct ast_if *ast_if_init(void)
     return new_if;
 }
 
-struct ast_cmd *ast_cmd_init(void)
+struct ast *ast_cmd_init(void)
 {
     struct ast_cmd *new_cmd = calloc(1, sizeof(struct ast_cmd));
     if (!new_cmd)
         return NULL;
     new_cmd->base.type = AST_COMMAND;
-    return new_cmd;
+    return (struct ast *)new_cmd;
 }
 
 struct ast_loop *ast_loop_init(enum ast_type type)

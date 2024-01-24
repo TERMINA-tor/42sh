@@ -43,7 +43,7 @@ struct ast_sequence {
 
 struct ast_sequence *ast_sequence_init(void);   // init the sequence, list of command
 struct ast_if *ast_if_init(void);   // init if node
-struct ast_cmd *ast_cmd_init(void);   // init commands node
+struct ast *ast_cmd_init(void);   // init commands node
 struct ast_loop *ast_loop_init(enum ast_type type); // init loop node
 struct ast *ast_loop_condition_add(enum ast_type type, struct ast *ast, struct ast *condition);    // add condition to loop node, if ast not found init the an if loop and add the condition
 struct ast *ast_loop_body_add(struct ast *ast, struct ast *body);   // add body to loop, if ast not found return NULL
