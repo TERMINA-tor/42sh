@@ -1,241 +1,258 @@
 #include "lexer.h"
 
-#include <ctype.h>
-#include <fnmatch.h>
-#include <stddef.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-// compare le mot avec les tokens
-
-static enum token_type input_token(char *c)
+// initialize a lexer structure
+struct lexer *init_lexer(FILE *fd)
 {
-    if (strcmp(c, "if") == 0)
-        return TOKEN_IF;
-    else if (strcmp(c, "else") == 0)
-        return TOKEN_ELSE;
-    else if (strcmp(c, "elif") == 0)
-        return TOKEN_ELIF;
-    else if (strcmp(c, "then") == 0)
-        return TOKEN_THEN;
-    else if (strcmp(c, "fi") == 0)
-        return TOKEN_FI;
-    else if (strcmp(c, "'") == 0)
-        return TOKEN_QUOTE;
-    else if (strcmp(c, "\n") == 0)
-        return TOKEN_EOL;
-    else if (strcmp(c, "") == 0)
-        return TOKEN_EOF;
-    else if (strcmp(c, ";") == 0)
-        return TOKEN_SEMICOLON;
-    else
-        return TOKEN_WORD;
-}
-
-// créer un lexer
-
-struct lexer *lexer_new(const char *input)
-{
-    struct lexer *lex = malloc(sizeof(struct lexer));
-    if (!lex)
+    struct lexer *lexer = calloc(1, sizeof(struct lexer));
+    if (!lexer)
+    {
+        fprintf(stderr, "./42sh: failed to allocate memory\n");
         return NULL;
-
-    lex->input = input;
-    lex->pos = 0;
-
-    return lex;
+    }
+    lexer->fd = fd;
+    return lexer;
 }
 
-// libérer le lexer
+// free a lexer structure
 void lexer_free(struct lexer *lexer)
 {
-    if (!lexer)
-        return;
+    if (lexer->fd)
+        fclose(lexer->fd);
     free(lexer);
 }
 
-/*
-    récupérer le prochain token dans le lexer (sans le supprimer) et le renvoyer
-    si le lexer est NULL, renvoyer un token d'erreur
-    si le lexer est vide, renvoyer un token EOF
-    si le lexer est plein, renvoyer un token d'erreur
-    si le token est un mot, renvoyer un token WORD
-
-    la fonction skip_spaces permet de passer les espaces dans le lexer
-    la create_token permet de créer un token
-    la handle_special_chars permet de gérer les caractères spéciaux
-    la handle_quote permet de gérer les quotes
-    la handle_word permet de gérer les mots
-
-    la fonction parse_input_for_tok permet de récupérer le prochain token dans
-   le lexer
-*/
-
-static void skip_spaces(struct lexer *lexer)
+// reads one character from the stream pointed at by lexer->fd
+// and updated the lexer offset
+static char read_from_input(struct lexer *lexer)
 {
-    while (lexer->input[lexer->pos] && lexer->input[lexer->pos] == ' ')
-        lexer->pos++;
+    if (!lexer->fd)
+        return EOF;
+    char curr = fgetc(lexer->fd);
+    lexer->offset++;
+    return curr;
 }
 
-static struct token create_token(enum token_type type, char *value)
+// pushes c in the buffer
+// i.e: the next getc will return c
+static void push_output(char c, struct lexer *lexer)
 {
-    struct token tok;
-    tok.type = type;
-
-    if (type == TOKEN_WORD)
-        tok.value = value;
-    else
-    {
-        tok.value = NULL;
-        free(value);
-    }
-
-    return tok;
+    ungetc(c, lexer->fd);
+    lexer->offset--;
 }
 
-static struct token handle_special_chars(struct lexer *lexer)
+// simply tells wether c is a character
+// that can be used in an operator or not
+static int is_operator(char c)
 {
-    char *temp =
-        calloc(2, sizeof(char)); // Allocate 2 bytes: one for the character and
-                                 // one for the null terminator
-    if (!temp)
+    char *operators = "&|<>;\n";
+    for (size_t i = 0; operators[i]; i++)
     {
-        fprintf(stderr, "Error: calloc failed\n");
-        exit(1);
+        if (c == operators[i])
+            return 1;
     }
-
-    temp[0] = lexer->input[lexer->pos];
-    temp[1] = '\0';
-
-    struct token tok = create_token(input_token(temp), temp);
-    lexer->pos++;
-    return tok;
+    return 0;
 }
 
-static struct token handle_quote(struct lexer *lexer)
+// simply tells wether c is a character
+// that can be used in a delimitor or not
+static int is_delimitor(char c)
 {
-    int quote_length = 0;
-    while (lexer->input[lexer->pos + quote_length]
-           != '\'') // +1 to skip the opening quote
+    char *delimitors = " #\r\t\\";
+    for (size_t i = 0; delimitors[i]; i++)
     {
-        quote_length++;
+        if (c == delimitors[i])
+            return 1;
     }
-
-    char *c =
-        calloc(quote_length + 1, sizeof(char)); // +1 for the null terminator
-    if (!c)
-    {
-        fprintf(stderr, "Error: calloc failed\n");
-        exit(1);
-    }
-
-    int i = 0;
-    while (lexer->input[lexer->pos] != '\'')
-    {
-        c[i] = lexer->input[lexer->pos];
-        i++;
-        lexer->pos++;
-    }
-    c[i] = '\0';
-    return create_token(input_token(c), c);
+    return 0;
 }
 
-static struct token handle_word(struct lexer *lexer)
+// simply tells wether c is a character
+// that can be used in blank or not
+static int is_blank(char c)
 {
-    int word_length = 0;
-    while (lexer->input[lexer->pos + word_length] != ' '
-           && lexer->input[lexer->pos + word_length] != '\0'
-           && lexer->input[lexer->pos + word_length] != '\n'
-           && lexer->input[lexer->pos + word_length] != ';')
-    {
-        if (lexer->input[lexer->pos + word_length] == '\'')
-        {
-            break;
-        }
-        word_length++;
-    }
-
-    char *c =
-        calloc(word_length + 1, sizeof(char)); // +1 for the null terminator
-    if (!c)
-    {
-        fprintf(stderr, "Error: calloc failed\n");
-        exit(1);
-    }
-
-    int i = 0;
-    while (i < word_length)
-    {
-        c[i] = lexer->input[lexer->pos];
-        i++;
-        lexer->pos++;
-    }
-    c[i] = '\0';
-    return create_token(input_token(c), c);
+    return (c == '\r') || (c == '\t') || (c == ' ');
 }
 
-// handle comments
+// simply tells wether c is a character
+// that can be used in a quote or not
+static int is_quote(char c)
+{
+    return (c == '\'') || (c == '\"');
+}
+
+// return the type of the token valu
+// using a lookup table
+static enum token_type get_token_type(char *value)
+{
+    const struct lookuptable table[] = { { TOKEN_EOF, "" },
+                                         { TOKEN_EOL, "\n" },
+                                         { TOKEN_IF, "if" },
+                                         { TOKEN_ELSE, "else" },
+                                         { TOKEN_THEN, "then" },
+                                         { TOKEN_ELIF, "elif" },
+                                         { TOKEN_FI, "fi" },
+                                         { TOKEN_WHILE, "while" },
+                                         { TOKEN_UNTIL, "until" },
+                                         { TOKEN_FOR, "for" },
+                                         { TOKEN_DO, "do" },
+                                         { TOKEN_DONE, "done" },
+                                         { TOKEN_AND, "&&" },
+                                         { TOKEN_OR, "||" },
+                                         { TOKEN_PIPE, "|" },
+                                         { TOKEN_SEMICOLON, ";" },
+                                         { TOKEN_REDIRECT_INPUT, "<" },
+                                         { TOKEN_REDIRECT_OUTPUT, ">" },
+                                         { TOKEN_APPEND_OUTPUT, ">>" },
+                                         { TOKEN_AMPREDIR_OUTPUT, ">&" },
+                                         { TOKEN_AMPREDIR_INPUT, "<&" },
+                                         { TOKEN_FORCE_OUTPUT_REDIR, ">|" } };
+    size_t table_length = sizeof(table) / sizeof(struct lookuptable);
+    for (size_t i = 0; i < table_length; i++)
+    {
+        if (!strcmp(table[i].value, value))
+            return table[i].token_type;
+    }
+    return TOKEN_WORD;
+}
+
+// handle the case of an unquoted ${}
+static int handle_dollar(struct lexer *lexer, struct Dstring *value)
+{
+    char tmp = read_from_input(lexer);
+    if (tmp != '{')
+    {
+        push_output(tmp, lexer);
+        return 0;
+    }
+    while (tmp != EOF && tmp != '}')
+    {
+        Dstring_append(value, tmp);
+    }
+    if (tmp == '}')
+        push_output('}', lexer);
+    return 1;
+}
+
+// discards a comment
+// i.e: discarding every character betwenn # and <newline> excluded
 static void handle_comment(struct lexer *lexer)
 {
-    while (lexer->input[lexer->pos] != '\n' && lexer->input[lexer->pos] != '\0')
-    {
-        lexer->pos++;
-    }
+    char tmp = read_from_input(lexer);
+    while (tmp != '\n' && tmp != EOF)
+        tmp = read_from_input(lexer);
+    if (tmp == '\n')
+        push_output('\n', lexer);
 }
 
-static struct token handle_newline(struct lexer *lexer)
+// handles the is_quoted flag (set to 1 if curr is the first encountered quote
+// or set to 0 if the matching quote is found)
+static char handle_quotes(int *is_quoted, char least_quote, char curr)
 {
-    lexer->pos++;
-    return create_token(TOKEN_EOL, NULL);
+    *is_quoted ^= (least_quote == curr) || least_quote == -1;
+    return *is_quoted ? curr : least_quote;
 }
 
-struct token parse_input_for_tok(struct lexer *lexer)
+static void get_next(struct lexer *lexer, struct Dstring *value)
 {
-    skip_spaces(lexer);
-
-    if (lexer->input[lexer->pos] == '\0')
+    char previous = -1; // previous character
+    char curr = read_from_input(lexer);
+    char least_quote = -1; // keeps track of the last quote type (\' | \")
+    int is_quoted = 0;
+    while (curr != EOF) // rule_1
     {
-        return create_token(TOKEN_EOF, NULL);
-    }
+        if (is_operator(previous) & !is_quoted)
+        {
+            if (is_operator(curr) && curr != '\n' && previous != '\n') // rule_2
+                Dstring_append(value, curr);
+            else // rule_3
+            {
+                push_output(curr, lexer);
+                break;
+            }
+        }
+        else if (curr == '\\' && !is_quoted)
+        {
+            char tmp = read_from_input(lexer);
+            if (tmp != '\n' && (!is_quoted))
+                push_output(tmp, lexer); // \\n = line continuation
+        }
+        else if ((curr == '\'' || curr == '\"') && !is_delimitor(previous))
+        {
+            least_quote = handle_quotes(&is_quoted, least_quote, curr);
+            Dstring_append(value, curr);
+        }
+        else if ((curr == '$') && (!is_quoted)) // rule_5
+        {
+            Dstring_append(value, curr);
+            if (handle_dollar(lexer, value))
+                break;
+        }
+        else if ((!is_quoted) && is_operator(curr) && !is_delimitor(previous))
+        {
+            if (previous == -1)
+                Dstring_append(value, curr);
+            else if (!is_operator(previous))
+            {
+                push_output(curr, lexer);
+                break;
+            }
+        }
+        else if ((!is_quoted) && (is_blank(curr)))
+        {
+            if (previous != -1 && !is_blank(previous))
+                break;
+        }
+        else if ((!is_operator(curr)) && (!is_delimitor(curr)))
+            Dstring_append(value, curr);
+        else if (curr == '#' && !is_quoted && !is_quote(previous))
+            handle_comment(lexer);
+        else
+            Dstring_append(value, curr);
 
-    if (lexer->input[lexer->pos] == '\n')
-    {
-        return handle_newline(lexer);
+        previous = curr;
+        curr = read_from_input(lexer);
     }
-
-    if (lexer->input[lexer->pos] == '\n' || lexer->input[lexer->pos] == '\''
-        || lexer->input[lexer->pos] == ';')
-    {
-        return handle_special_chars(lexer);
-    }
-
-    if (lexer->pos != 0 && lexer->input[lexer->pos - 1] == '\'')
-    {
-        return handle_quote(lexer);
-    }
-
-    if (lexer->input[lexer->pos] == '#')
-    {
-        handle_comment(lexer);
-        return parse_input_for_tok(lexer);
-    }
-
-    return handle_word(lexer);
+    Dstring_append(value, 0);
 }
 
+// simply returns the next available token
+struct token get_next_token(struct lexer *lexer)
+{
+    struct Dstring *token_value = Dstring_new();
+    get_next(lexer, token_value);
+
+    struct token new_token;
+    new_token.type = get_token_type(token_value->value);
+    if (new_token.type != TOKEN_WORD)
+    {
+        Dstring_free(token_value);
+    }
+    else
+    {
+        new_token.value = token_value->value;
+        free(token_value);
+    }
+    return new_token;
+}
+
+// returns the next available token without modifying
+// the lexers offset
 struct token lexer_peek(struct lexer *lexer)
 {
-    ssize_t pos = lexer->pos;
-    struct token tok = parse_input_for_tok(lexer);
-    if (tok.value)
+    size_t old_offset = lexer->offset;
+
+    struct token tok = get_next_token(lexer);
+    if (tok.type == TOKEN_WORD)
         free(tok.value);
-    lexer->pos = pos;
+
+    size_t offset = lexer->offset - old_offset;
+    fseek(lexer->fd, -offset, SEEK_CUR);
     return tok;
 }
 
+// returns the next available token saving the offset
+// this operation is not reversible
 struct token lexer_pop(struct lexer *lexer)
 {
-    struct token tok = parse_input_for_tok(lexer);
-    return tok;
+    return get_next_token(lexer);
 }

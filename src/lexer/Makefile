@@ -1,34 +1,15 @@
-CC = gcc
-CFLAGS = -Wall -Werror -Wextra -std=c99 -pedantic -Wvla -g -fsanitize=address
-CPPFLAGS = -Isrc -Isrc/parser -Isrc/lexer -Isrc/ast
+CC=gcc
+CFLAGS=-std=c99 -pedantic -Werror -Wall -Wextra -Wvla -fsanitize=address -g
+DEPENDENCIES= test_lexer.c lexer.c ../input/input.c ../utils/Dstring/dstring.c
 
-OBJS = lexer.o
+all: test
 
-OBJ_TOKEN = tests/token_printer.o
-OBJ_PEEK = tests/peek_printer.o
+test:
+	$(CC) $(CFLAGS) -D_POSIX_C_SOURCE=200809L -o tests/test $(DEPENDENCIES)
 
-all: token
-
-token: $(OBJS) $(OBJ_TOKEN)
-	$(CC) $(CFLAGS) -o eval_token $(OBJS) $(OBJ_TOKEN)
-
-peek: $(OBJS) $(OBJ_PEEK)
-	$(CC) $(CFLAGS) -o eval_peek $(OBJS) $(OBJ_PEEK)
-
-check: token
+check: test
 	python3 -m pytest -vv tests/test_lexer.py
 	make clean
 
-check_peek: peek
-	python3 -m pytest -vv tests/test_lexer_peek.py
-	make clean
-
-$(OBJ_TOKEN):
-	$(CC) $(CFLAGS) -c tests/token_printer.c -o $(OBJ_TOKEN)
-
-$(OBJ_PEEK):
-	$(CC) $(CFLAGS) -c tests/peek_printer.c -o $(OBJ_PEEK)
-
 clean:
-	$(RM) $(OBJS) $(OBJ_TOKEN) eval_* $(OBJ_PEEK)
-
+	$(RM) *.o tests/test

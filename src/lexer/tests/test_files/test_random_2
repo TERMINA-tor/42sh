@@ -1,0 +1,5 @@
+echo toto;
+if true
+echo "hey! $toto || $tata && titi"
+else
+echo "hmmmm"
