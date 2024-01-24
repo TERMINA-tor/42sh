@@ -35,11 +35,11 @@ struct ast_loop *ast_loop_init(enum ast_type type)
     struct ast_loop *new_loop = calloc(1, sizeof(struct ast_loop));
     if (!new_loop)
         return NULL;
-    new_cmd->base.type = type;
+    new_loop->base.type = type;
     return new_loop;
 }
 
-struct ast_loop *ast_loop_condition_add(enum ast_type type, struct ast *ast, struct ast *condition)
+struct ast *ast_loop_condition_add(enum ast_type type, struct ast *ast, struct ast *condition)
 {
     if (!condition)
         return ast;
@@ -49,12 +49,12 @@ struct ast_loop *ast_loop_condition_add(enum ast_type type, struct ast *ast, str
         free_ast(ast);
         return NULL;
     }
-    struct ast_loop *loop = (struct ast_if *)ast;
+    struct ast_loop *loop = (struct ast_loop *)ast;
     loop->condition = condition;
     return (struct ast*)loop;
 }
 
-struct ast *ast_loop_body_add(enum ast_type type, struct ast *ast, struct ast *body){
+struct ast *ast_loop_body_add(struct ast *ast, struct ast *body){
     if (!body)
         return ast;
     if (!ast)
@@ -63,7 +63,7 @@ struct ast *ast_loop_body_add(enum ast_type type, struct ast *ast, struct ast *b
         free_ast(ast);
         return NULL;
     }
-    struct ast_loop *loop = (struct ast_if *)ast;
+    struct ast_loop *loop = (struct ast_loop *)ast;
     loop->then_body = body;
     return (struct ast*)loop;
 }
@@ -178,6 +178,14 @@ static void free_sequence(struct ast_sequence *sequence) {
     }
 }
 
+static void free_loop(struct ast_loop *loop_node) {
+    if (loop_node) {
+        free_ast(loop_node->condition);
+        free_ast(loop_node->then_body);
+        free(loop_node);
+    }
+}
+
 void free_ast(struct ast *node) {
     if (node) {
         switch (node->type) {
@@ -189,6 +197,12 @@ void free_ast(struct ast *node) {
                 break;
             case AST_SEQUENCE:
                 free_sequence((struct ast_sequence *)node);
+                break;
+            case AST_FOR:
+                free_loop((struct ast_loop *)node);
+                break;
+            case AST_UNTIL:
+                free_loop((struct ast_loop *)node);
                 break;
             // Ajoutez des cas pour d'autres types d'AST au besoin
         }
