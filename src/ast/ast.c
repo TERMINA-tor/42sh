@@ -30,6 +30,44 @@ struct ast_cmd *ast_cmd_init(void)
     return new_cmd;
 }
 
+struct ast_loop *ast_loop_init(enum ast_type type)
+{
+    struct ast_loop *new_loop = calloc(1, sizeof(struct ast_loop));
+    if (!new_loop)
+        return NULL;
+    new_cmd->base.type = type;
+    return new_loop;
+}
+
+struct ast_loop *ast_loop_condition_add(enum ast_type type, struct ast *ast, struct ast *condition)
+{
+    if (!condition)
+        return ast;
+    if (!ast)
+        ast = (struct ast *)ast_loop_init(type);
+    if (ast->type != AST_FOR && ast->type != AST_UNTIL){
+        free_ast(ast);
+        return NULL;
+    }
+    struct ast_loop *loop = (struct ast_if *)ast;
+    loop->condition = condition;
+    return (struct ast*)loop;
+}
+
+struct ast *ast_loop_body_add(enum ast_type type, struct ast *ast, struct ast *body){
+    if (!body)
+        return ast;
+    if (!ast)
+        return NULL;
+    if (ast->type != AST_FOR && ast->type != AST_UNTIL){
+        free_ast(ast);
+        return NULL;
+    }
+    struct ast_loop *loop = (struct ast_if *)ast;
+    loop->then_body = body;
+    return (struct ast*)loop;
+}
+
 struct ast *ast_sequence_add(struct ast *ast, struct ast *command) {
     if (!command)
         return ast;
