@@ -2,6 +2,7 @@
 *.s
 *.swp
 42sh
+test
 __pycache__
 .pytest_cache
 .clang-format
