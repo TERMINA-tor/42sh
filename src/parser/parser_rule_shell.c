@@ -1,4 +1,4 @@
-#include "rule_shell.h"
+#include "parser.h"
 
 enum parser_status parse_shell_command(struct ast **ast, struct lexer *lexer){
     return parse_if(ast, lexer);
@@ -17,8 +17,8 @@ enum parser_status parse_if(struct ast **ast, struct lexer *lexer){
     lexer_pop(lexer);
     if (parse_compound_list(&(((struct ast_if*)node)->then_body), lexer) != PARSER_OK) // check compound list
         return PARSER_UNEXPECTED_TOKEN;
-
-    parse_else_clause(&(((struct ast_if*)node)->else_body), lexer);
+    if (lexer_peek(lexer).type == TOKEN_ELSE) // check else token
+        parse_else_clause(&(((struct ast_if*)node)->else_body), lexer);
 
     if (lexer_peek(lexer).type != TOKEN_FI) // check fi token
         return PARSER_UNEXPECTED_TOKEN;

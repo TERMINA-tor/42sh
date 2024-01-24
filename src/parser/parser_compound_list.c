@@ -1,4 +1,4 @@
-#include "parser_compound_list.h"
+#include "parser.h"
 
 /*
 compound_list =

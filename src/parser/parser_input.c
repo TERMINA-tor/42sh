@@ -1,4 +1,4 @@
-#include "parser_input.h"
+#include "parser.h"
 
 enum parser_status parse_input(struct ast **ast, struct lexer *lexer)
 {
@@ -56,8 +56,8 @@ enum parser_status parse_simple_command(struct ast **ast, struct lexer *lexer)
     *ast = new;
     if (!ast_cmd_word_add(*ast, lexer_pop(lexer).value))
         return PARSER_UNEXPECTED_TOKEN;
-    while (parse_element(ast, lexer) == PARSER_OK)
-        ;
+    while (parse_element(ast, lexer) == PARSER_OK);
+    return PARSER_OK;
 }
 
 enum parser_status parse_element(struct ast **ast, struct lexer *lexer)

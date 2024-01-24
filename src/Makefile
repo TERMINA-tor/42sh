@@ -1,0 +1,12 @@
+CC=gcc
+CFLAGS=-std=c99 -pedantic -Werror -Wall -Wextra -Wvla
+
+DEP = parser/parser_compound_list.c parser/parser_input.c parser/parser_rule_shell.c ast/ast.c input/input.c lexer/lexer.c utils/Dstring/dstring.c main.c
+
+all: test
+
+test: 
+	$(CC) $(CFLAGS) -D_POSIX_C_SOURCE=200809L -o test $(DEP)
+
+clean:
+	$(RM) *.o test
