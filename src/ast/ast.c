@@ -1,6 +1,8 @@
 #include "ast.h"
 #include <stdlib.h>
 
+void free_ast(struct ast *node);
+
 struct ast_sequence *ast_sequence_init(void)
 {
     struct ast_sequence *new_sequence = calloc(1, sizeof(struct ast_sequence));
@@ -28,15 +30,96 @@ struct ast_cmd *ast_cmd_init(void)
     return new_cmd;
 }
 
-void free_ast(struct ast *node);
+struct ast *ast_sequence_add(struct ast *ast, struct ast *command) {
+    if (!command)
+        return ast;
+    if (!ast)
+        ast = (struct ast *)ast_sequence_init();
+    if (ast->type != AST_SEQUENCE){
+        free_ast(ast);
+        return NULL;
+    }
+    struct ast_sequence *sequence = (struct ast_sequence *)ast;
+    sequence->commands = realloc(sequence->commands, (sequence->num_commands + 1) * sizeof(struct ast *));
+    if (!sequence->commands){
+        free_ast(ast);
+        return NULL;
+    }
+    sequence->commands[sequence->num_commands] = command;
+    sequence->num_commands++;
+    return (struct ast *)sequence;
+}
 
-void free_cmd(struct ast_cmd *cmd) {
+struct ast *ast_if_condition_add(struct ast *ast, struct ast *condition){
+    if (!condition)
+        return ast;
+    if (!ast)
+        ast = (struct ast *)ast_if_init();
+    if (ast->type != AST_IF){
+        free_ast(ast);
+        return NULL;
+    }
+    struct ast_if *if_ast = (struct ast_if *)ast;
+    if_ast->condition = condition;
+    return (struct ast*)if_ast;
+}
+
+struct ast *ast_if_then_add(struct ast *ast, struct ast *then){
+    if (!then)
+        return ast;
+    if (!ast)
+        return NULL;
+    if (ast->type != AST_IF){
+        free_ast(ast);
+        return NULL;
+    }
+    struct ast_if *if_ast = (struct ast_if *)ast;
+    if_ast->then_body = then;
+    return (struct ast*)if_ast;
+}
+
+struct ast *ast_if_else_add(struct ast *ast, struct ast *ast_else){
+    if (!ast_else)
+        return ast;
+    if (!ast)
+        return NULL;
+    if (ast->type != AST_IF){
+        free_ast(ast);
+        return NULL;
+    }
+    struct ast_if *if_ast = (struct ast_if *)ast;
+    if_ast->else_body = ast_else;
+    return (struct ast*)if_ast;
+}
+
+struct ast *ast_cmd_word_add(struct ast *ast, char *word) {
+    if (!word)
+        return ast;
+    if (!ast)
+        ast = (struct ast *)ast_cmd_init();
+    if (ast->type != AST_COMMAND){
+        free_ast(ast);
+        return NULL;
+    }
+    struct ast_cmd *cmd = (struct ast_cmd *)ast;
+    cmd->words = realloc(cmd->words, (cmd->num_words + 1) * sizeof(char *));
+    if (!cmd->words){
+        free_ast(ast);
+        return NULL;
+    }
+    cmd->words[cmd->num_words] = word;
+    cmd->num_words++;
+    return (struct ast *)cmd;
+}
+
+static void free_cmd(struct ast_cmd *cmd) {
     if (cmd) {
+        free(cmd->words);
         free(cmd);
     }
 }
 
-void free_if(struct ast_if *if_node) {
+static void free_if(struct ast_if *if_node) {
     if (if_node) {
         free_ast(if_node->condition);
         free_ast(if_node->then_body);
@@ -45,11 +128,12 @@ void free_if(struct ast_if *if_node) {
     }
 }
 
-void free_sequence(struct ast_sequence *sequence) {
+static void free_sequence(struct ast_sequence *sequence) {
     if (sequence) {
         for (size_t i = 0; i < sequence->num_commands; i++) {
             free_ast(sequence->commands[i]);
         }
+        free(sequence->commands);
         free(sequence);
     }
 }
@@ -70,5 +154,3 @@ void free_ast(struct ast *node) {
         }
     }
 }
-
-

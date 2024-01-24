@@ -1,40 +1,41 @@
 #include "ast.h"
 #include <stdio.h>
-#include <stdlib.h>
 
 int main() {
     // Création d'une séquence d'instructions : echo "Hello"; echo "World";
     struct ast_sequence *sequence = ast_sequence_init();
+
     struct ast_cmd *cmd1 = ast_cmd_init();
-    cmd1->words = (char *[]){"echo", "Hello", NULL};
+    cmd1 = (struct ast_cmd*)ast_cmd_word_add((struct ast*)cmd1, "hello");
+
     struct ast_cmd *cmd2 = ast_cmd_init();
-    cmd2->words = (char *[]){"echo", "World", NULL};
+    cmd2 = (struct ast_cmd*)ast_cmd_word_add((struct ast*)cmd2, "hello");
 
-    sequence->commands = (struct ast *[]){(struct ast *)cmd1, (struct ast *)cmd2};
-    sequence->num_commands = 2;
+    sequence = (struct ast_sequence *)ast_sequence_add((struct ast *)sequence, (struct ast *)cmd1);
+    sequence = (struct ast_sequence *)ast_sequence_add((struct ast *)sequence, (struct ast *)cmd2);
 
-    // Création d'une structure if : if (1) { echo "True"; } else { echo "False"; }
-    struct ast_if *if_node = ast_if_init();
-    if_node->condition = (struct ast*)ast_cmd_init();  // Vous pouvez remplacer par votre propre condition ici
-    if_node->then_body = (struct ast*)ast_sequence_init();
-    struct ast_cmd *true_cmd = ast_cmd_init();
-    true_cmd->words = (char *[]){"echo", "True", NULL};
-    ((struct ast_sequence *)if_node->then_body)->commands = (struct ast *[]){(struct ast *)true_cmd};
-    ((struct ast_sequence *)if_node->then_body)->num_commands = 1;
+    // Création d'une condition IF : if (condition) then_body else else_body
+    struct ast_if *if_statement = ast_if_init();
 
-    struct ast_cmd *false_cmd = ast_cmd_init();
-    false_cmd->words = (char *[]){"echo", "False", NULL};
-    if_node->else_body = (struct ast *)false_cmd;
+    struct ast_cmd *if_cmd = ast_cmd_init();
+    if_cmd = (struct ast_cmd*)ast_cmd_word_add((struct ast*)if_cmd, "hello");
+
+    struct ast_cmd *else_cmd = ast_cmd_init();
+    else_cmd = (struct ast_cmd*)ast_cmd_word_add((struct ast*)else_cmd, "hello");
+
+    if_statement = (struct ast_if *)ast_if_condition_add((struct ast *)if_statement, (struct ast *)if_cmd);
+    if_statement = (struct ast_if *)ast_if_then_add((struct ast *)if_statement, (struct ast *)else_cmd);
+
+    // Ajout de la séquence et de l'instruction IF à une nouvelle séquence
+    struct ast_sequence *main_sequence = ast_sequence_init();
+    main_sequence = (struct ast_sequence *)ast_sequence_add((struct ast *)main_sequence, (struct ast *)sequence);
+    main_sequence = (struct ast_sequence *)ast_sequence_add((struct ast *)main_sequence, (struct ast *)if_statement);
 
     // Affichage du type des nœuds
-    printf("Sequence type: %d\n", sequence->base.type);
-    printf("Command 1 type: %d\n", cmd1->base.type);
-    printf("Command 2 type: %d\n", cmd2->base.type);
-    printf("If type: %d\n", if_node->base.type);
+    printf("Sequence type: %d\n", main_sequence->base.type);
 
     // Libération de la mémoire
-    free_ast((struct ast *)sequence);
-    free_ast((struct ast *)if_node);
+    free_ast((struct ast *)main_sequence);
 
     return 0;
 }
