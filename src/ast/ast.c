@@ -114,6 +114,8 @@ struct ast *ast_cmd_word_add(struct ast *ast, char *word) {
 
 static void free_cmd(struct ast_cmd *cmd) {
     if (cmd) {
+        for(size_t i = 0; i < cmd->num_words; i++)
+            free(cmd->words[i]);
         free(cmd->words);
         free(cmd);
     }

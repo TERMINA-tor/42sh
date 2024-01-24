@@ -1,15 +1,24 @@
 #include "ast.h"
 #include <stdio.h>
+#include <stdlib.h>
+
 
 int main() {
-    // Création d'une séquence d'instructions : echo "Hello"; echo "World";
+    // Création d'une séquence d'instructions : echo exemple; echo "World";
     struct ast_sequence *sequence = ast_sequence_init();
-
+    char *exemple = malloc(sizeof(char *));
+    exemple = "hello";
+    char *exemple2 = malloc(sizeof(char *));
+    exemple2 = "hello";
+    char *exemple3 = malloc(sizeof(char *));
+    exemple3 = "hello";
+    char *exemple4 = malloc(sizeof(char *));
+    exemple4 = "hello";
     struct ast_cmd *cmd1 = ast_cmd_init();
-    cmd1 = (struct ast_cmd*)ast_cmd_word_add((struct ast*)cmd1, "hello");
+    cmd1 = (struct ast_cmd*)ast_cmd_word_add((struct ast*)cmd1, exemple);
 
     struct ast_cmd *cmd2 = ast_cmd_init();
-    cmd2 = (struct ast_cmd*)ast_cmd_word_add((struct ast*)cmd2, "hello");
+    cmd2 = (struct ast_cmd*)ast_cmd_word_add((struct ast*)cmd2, exemple2);
 
     sequence = (struct ast_sequence *)ast_sequence_add((struct ast *)sequence, (struct ast *)cmd1);
     sequence = (struct ast_sequence *)ast_sequence_add((struct ast *)sequence, (struct ast *)cmd2);
@@ -18,10 +27,10 @@ int main() {
     struct ast_if *if_statement = ast_if_init();
 
     struct ast_cmd *if_cmd = ast_cmd_init();
-    if_cmd = (struct ast_cmd*)ast_cmd_word_add((struct ast*)if_cmd, "hello");
+    if_cmd = (struct ast_cmd*)ast_cmd_word_add((struct ast*)if_cmd, exemple3);
 
     struct ast_cmd *else_cmd = ast_cmd_init();
-    else_cmd = (struct ast_cmd*)ast_cmd_word_add((struct ast*)else_cmd, "hello");
+    else_cmd = (struct ast_cmd*)ast_cmd_word_add((struct ast*)else_cmd, exemple4);
 
     if_statement = (struct ast_if *)ast_if_condition_add((struct ast *)if_statement, (struct ast *)if_cmd);
     if_statement = (struct ast_if *)ast_if_then_add((struct ast *)if_statement, (struct ast *)else_cmd);
