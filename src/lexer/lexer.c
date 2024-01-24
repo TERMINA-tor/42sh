@@ -8,14 +8,12 @@ struct lexer *init_lexer(FILE *fd)
         fprintf(stderr, "./42sh: failed to allocate memory\n");
         return NULL;
     }
-    lexer->current_token = calloc(1, sizeof(struct token));
     lexer->fd = fd;
     return lexer;
 }
 
 void lexer_free(struct lexer *lexer)
 {
-    free(lexer->current_token);
     fclose(lexer->fd);
     free(lexer);
 }
@@ -203,15 +201,18 @@ struct token get_next_token(struct lexer *lexer)
 	    new_token.value = token_value->value;
         free(token_value);
     }
-    *lexer->current_token = (struct token) { .type = new_token.type, .value = new_token.value }; 
     return new_token;
 }
 
 struct token lexer_peek(struct lexer *lexer)
 {
-    if (!lexer->current_token->type)
-        *lexer->current_token = get_next_token(lexer);
-    return *lexer->current_token;
+    size_t curr_offset = lexer->offset;
+    struct token next_token = get_next_token(lexer);
+    if (next_token.type == TOKEN_WORD)
+        free(next_token.value);
+    fseek(lexer->fd, curr_offset, SEEK_SET);
+    lexer->offset = curr_offset;
+    return next_token;
 }
 
 struct token lexer_pop(struct lexer *lexer)

@@ -46,7 +46,6 @@ struct lexer
 {
     FILE *fd; // the file descriptor pointing to the input stream
     size_t offset; // how many characters have been read
-    struct token *current_token; // the current token
 };
 
 // lookuptable structure

@@ -50,8 +50,6 @@ compound_list = {'\n'} and_or { ( ';' | '\n' ) {'\n'} and_or } [';'] {'\n'} ;
 #include "parser.h"
 #include "../lexer/lexer.h"
 
-static struct token current_token;
-
 enum parser_status parse_input(struct lexer *lexer);
 static enum parser_status parse_list(struct lexer *lexer);
 static enum parser_status parse_and_or(struct lexer *lexer);
@@ -130,8 +128,6 @@ static enum parser_status parse_and_or(struct lexer *lexer)
 static enum parser_status parse_pipeline(struct lexer *lexer)
 {
     struct token next = lexer_peek(lexer);
-    if (next.type == TOKEN_WORD)
-        free(next.value);
     if (next.type == TOKEN_NOT)
         lexer_pop(lexer);
     
@@ -167,7 +163,8 @@ static enum parser_status parse_command(struct lexer *lexer)
                 return PARSER_UNEXPECTED_TOKEN;
             next = lexer_pop(lexer);
         }
-        free(next.value);
+        if (next.type == TOKEN_WORD)
+            free(next.value);
         return PARSER_OK;
     }
 
