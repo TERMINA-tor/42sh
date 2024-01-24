@@ -1,7 +1,7 @@
 import subprocess
 
 def run_lexer(input_string):
-    result = subprocess.run(['./test'], input=input_string, text=True, capture_output=True)
+    result = subprocess.run(['./test', "-c", input_string], text=True, capture_output=True)
     return result.stdout.rstrip('\n').split('\n')
 
 def test_single_command():

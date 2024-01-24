@@ -51,7 +51,6 @@ compound_list = {'\n'} and_or { ( ';' | '\n' ) {'\n'} and_or } [';'] {'\n'} ;
 #include "../lexer/lexer.h"
 
 enum parser_status parse_input(struct lexer *lexer); //
-static enum parser_status parse_list(struct lexer *lexer); //
 static enum parser_status parse_and_or(struct lexer *lexer); //
 static enum parser_status parse_pipeline(struct lexer *lexer); //
 static enum parser_status parse_command(struct lexer *lexer);
@@ -84,7 +83,7 @@ static int is_redirection(struct token t)
 
 enum parser_status parse_input(struct lexer *lexer)
 {
-    if (parse_list(lexer) == PARSER_OK)
+    if (parse_compound_list(lexer) == PARSER_OK)
     {
         if (lexer_peek(lexer).type == TOKEN_EOL || lexer_peek(lexer).type == TOKEN_EOF)
             return PARSER_OK;
@@ -94,23 +93,6 @@ enum parser_status parse_input(struct lexer *lexer)
         return PARSER_OK;
     
     return PARSER_UNEXPECTED_TOKEN;
-}
-
-static enum parser_status parse_list(struct lexer *lexer)
-{
-    if (parse_and_or(lexer) != PARSER_OK)
-        return PARSER_UNEXPECTED_TOKEN;
-    
-    struct token next = lexer_peek(lexer);
-    while (next.type == TOKEN_SEMICOLON)
-    {
-        lexer_pop(lexer);
-        if (parse_and_or(lexer) != PARSER_OK)
-            return PARSER_UNEXPECTED_TOKEN;
-        next = lexer_peek(lexer);
-    }
-
-    return PARSER_OK;
 }
 
 static enum parser_status parse_and_or(struct lexer *lexer)
@@ -183,9 +165,18 @@ static enum parser_status parse_simple_command(struct lexer *lexer)
 
     if (lexer_peek(lexer).type == TOKEN_WORD)
     {
-	    lexer_pop(lexer);
+	    struct token tok = lexer_pop(lexer);
+        if (tok.type == TOKEN_WORD)
+        {
+            free(tok.value);
+        }
 	    while (parse_element(lexer) == PARSER_OK)
+        {
+            tok = lexer_pop(lexer);
+            if (tok.type == TOKEN_WORD)
+                free(tok.value);
 		    continue;
+        }
 	    return PARSER_OK;
     }
     return nb_prefix >= 1 ? PARSER_OK : PARSER_UNEXPECTED_TOKEN;
