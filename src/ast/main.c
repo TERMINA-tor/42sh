@@ -1,19 +1,20 @@
 #include "ast.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 
 int main() {
     // Création d'une séquence d'instructions : echo exemple; echo "World";
     struct ast_sequence *sequence = ast_sequence_init();
-    char *exemple = malloc(sizeof(char *));
-    exemple = "hello";
-    char *exemple2 = malloc(sizeof(char *));
-    exemple2 = "hello";
-    char *exemple3 = malloc(sizeof(char *));
-    exemple3 = "hello";
-    char *exemple4 = malloc(sizeof(char *));
-    exemple4 = "hello";
+    char *exemple = malloc(strlen("hello") + 1);
+    strcpy(exemple, "hello");
+    char *exemple2 = malloc(strlen("hello") + 1);
+    strcpy(exemple2, "hello");
+    char *exemple3 = malloc(strlen("hello") + 1);
+    strcpy(exemple3, "hello");
+    char *exemple4 = malloc(strlen("hello") + 1);
+    strcpy(exemple, "hello");
     struct ast_cmd *cmd1 = ast_cmd_init();
     cmd1 = (struct ast_cmd*)ast_cmd_word_add((struct ast*)cmd1, exemple);
 
