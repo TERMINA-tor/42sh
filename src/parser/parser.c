@@ -350,7 +350,7 @@ static enum parser_status parse_redirection(struct lexer *lexer)
 
 static enum parser_status parse_prefix(struct lexer *lexer)
 {
-    return parse_prefix(lexer);
+    return parse_redirection(lexer);
 }
 
 static enum parser_status parse_element(struct lexer *lexer)
