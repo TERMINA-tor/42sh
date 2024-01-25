@@ -28,8 +28,8 @@ enum parser_status parse_list(struct ast **ast, struct lexer *lexer)
     while (lexer_peek(lexer).type == TOKEN_SEMICOLON)
     {
         lexer_pop(lexer);
-        if (parse_and_or(ast, lexer) != PARSER_OK)
-            return PARSER_UNEXPECTED_TOKEN;
+        if (parse_and_or(ast, lexer) == PARSER_OK)
+            break;
     }
     if (lexer_peek(lexer).type == TOKEN_SEMICOLON)
         lexer_pop(lexer);
