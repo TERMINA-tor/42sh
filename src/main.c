@@ -4,7 +4,14 @@
 #include "parser/parser.h"
 #include "utils/Dstring/dstring.h"
 
-int main(void)
+int main(int argc, char **argv)
 {
-	return 0;
+    FILE *fd = get_input(argc, argv);
+    if (!fd)
+	    return -1;
+    struct lexer *lexer = init_lexer(fd);
+    if (!lexer)
+	    return -1;
+    struct ast *res = NULL;
+    return (parse_input(&res, lexer) == PARSER_OK);
 }

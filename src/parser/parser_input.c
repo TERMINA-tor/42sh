@@ -4,7 +4,7 @@ enum parser_status parse_input(struct ast **ast, struct lexer *lexer)
 {
     struct token next = lexer_peek(lexer);
 
-    if (parse_list(ast, lexer))
+    if (parse_list(ast, lexer) == PARSER_OK)
     {
         next = lexer_peek(lexer);
         if (next.type == TOKEN_EOL || next.type == TOKEN_EOF)

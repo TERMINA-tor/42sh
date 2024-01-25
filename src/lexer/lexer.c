@@ -28,7 +28,8 @@ static char read_from_input(struct lexer *lexer)
     if (!lexer->fd)
         return EOF;
     char curr = fgetc(lexer->fd);
-    lexer->offset++;
+    if (curr != EOF)
+    	lexer->offset++;
     return curr;
 }
 
@@ -246,7 +247,8 @@ struct token lexer_peek(struct lexer *lexer)
         free(tok.value);
 
     size_t offset = lexer->offset - old_offset;
-    fseek(lexer->fd, -offset, SEEK_CUR);
+    fseek(lexer->fd, (long)(-offset), SEEK_CUR);
+    lexer->offset = old_offset;
     return tok;
 }
 
