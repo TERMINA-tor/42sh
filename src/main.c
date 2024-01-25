@@ -13,5 +13,6 @@ int main(int argc, char **argv)
     if (!lexer)
 	    return -1;
     struct ast *res = NULL;
-    return (parse_input(&res, lexer) == PARSER_OK);
+    printf("%d\n", parse_input(&res, lexer) == PARSER_OK);
+    return 0;
 }

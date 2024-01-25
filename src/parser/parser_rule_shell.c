@@ -9,7 +9,7 @@ enum parser_status parse_if(struct ast **ast, struct lexer *lexer){
         return PARSER_UNEXPECTED_TOKEN;
     lexer_pop(lexer);
     struct ast *node = (struct ast *)ast_if_init();
-    *ast = node;
+    *ast = node;// do the cast here TODO
     if (parse_compound_list(&(((struct ast_if*)node)->condition), lexer) != PARSER_OK) // check compound list
         return PARSER_UNEXPECTED_TOKEN;
     if (lexer_peek(lexer).type != TOKEN_THEN) // check then token
@@ -17,7 +17,8 @@ enum parser_status parse_if(struct ast **ast, struct lexer *lexer){
     lexer_pop(lexer);
     if (parse_compound_list(&(((struct ast_if*)node)->then_body), lexer) != PARSER_OK) // check compound list
         return PARSER_UNEXPECTED_TOKEN;
-    if (lexer_peek(lexer).type == TOKEN_ELSE) // check else token
+    if (lexer_peek(lexer).type == TOKEN_ELSE 
+       || lexer_peek(lexer).type == TOKEN_ELIF) // check else token
         parse_else_clause(&(((struct ast_if*)node)->else_body), lexer);
 
     if (lexer_peek(lexer).type != TOKEN_FI) // check fi token

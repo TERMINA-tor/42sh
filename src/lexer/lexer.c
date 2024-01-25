@@ -159,8 +159,9 @@ static void get_next(struct lexer *lexer, struct Dstring *value)
     char curr = read_from_input(lexer);
     char least_quote = -1; // keeps track of the last quote type (\' | \")
     int is_quoted = 0;
-    while (curr != EOF) // rule_1
+    while (curr != EOF) // rule_1 
     {
+	// add condition for eof
         if (is_operator(previous) & !is_quoted)
         {
             if (is_operator(curr) && curr != '\n' && previous != '\n') // rule_2
