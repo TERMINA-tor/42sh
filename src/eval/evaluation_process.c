@@ -4,10 +4,25 @@
 #include "../ast/ast.h"
 #include "builtins.h"
 
+int evaluate_node(struct ast *node);
 int execute_command(struct ast_cmd *command_node);
 char **convert_children_to_argv(struct ast *node);
 int evaluate_if(struct ast_if *if_node);
+int execute_until(struct ast_loop *until_node);
 
+int evaluate_ast(struct ast_sequence *node)
+{
+    for (size_t i = 0; i < node->num_commands; i++)
+    {
+        int res = evaluate_node(*(node->commands + i));
+        if (res == -1)
+        {
+            return res;
+        }
+    }
+
+    return builtin_true();
+}
 int evaluate_node(struct ast *node)
 {
     if (node == NULL)
@@ -21,6 +36,8 @@ int evaluate_node(struct ast *node)
         return evaluate_if((struct ast_if *)node);
     case AST_COMMAND:
         return execute_command((struct ast_cmd *)node);
+    case AST_UNTIL:
+        return execute_until((struct ast_loop *)node);
     default:
         fprintf(stderr, "Unknown AST node type\n");
         return -1;
@@ -64,8 +81,7 @@ int execute_command(struct ast_cmd *command_node)
 {
     if (strcmp(*command_node->words, "echo") == 0)
     {
-        int res = builtin_echo(command_node->words + 1);
-        return res;
+        return builtin_echo(command_node->words + 1);
     }
     else if (strcmp(*command_node->words, "true") == 0)
     {
@@ -80,6 +96,16 @@ int execute_command(struct ast_cmd *command_node)
         fprintf(stderr, "Unknown command: %s\n", *command_node->words);
         return -1;
     }
+}
+
+int execute_until(struct ast_loop *until_node)
+{
+    while (!evaluate_node(until_node->condition))
+    {
+        evaluate_node(until_node->then_body);
+    }
+
+    return builtin_true();
 }
 
 // char **convert_children_to_argv(struct ast *node)
