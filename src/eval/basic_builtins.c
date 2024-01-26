@@ -19,19 +19,19 @@ int builtin_false(void)
 
 void print_args(char **argv, bool interpret_escapes);
 // The 'echo' built-in function
-int builtin_echo(char **argv)
+int builtin_echo(char **argv, size_t nbr_args)
 {
     bool newline = true; // By default, echo prints a newline at the end
     bool interpret_escapes =
         false; // By default, do not interpret special characters
 
     // Skip the command name
-    argv++;
+    size_t i = 1;
 
     // Process options
-    while (*argv && **argv == '-')
+    while (i < nbr_args && *argv[i] == '-')
     {
-        char *option = *argv + 1;
+        char *option = argv[i] + 1;
         while (*option)
         {
             switch (*option)
@@ -51,7 +51,7 @@ int builtin_echo(char **argv)
             }
             option++;
         }
-        argv++;
+        i++;
     }
 
     // Print arguments

@@ -1,5 +1,9 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 #include "../ast/ast.h"
 #include "builtins.h"
@@ -9,6 +13,7 @@ int execute_command(struct ast_cmd *command_node);
 char **convert_children_to_argv(struct ast *node);
 int evaluate_if(struct ast_if *if_node);
 int execute_until(struct ast_loop *until_node);
+int execute_command_non_builtin(char *argv[], size_t num_words);
 
 int evaluate_ast(struct ast_sequence *node)
 {
@@ -81,7 +86,7 @@ int execute_command(struct ast_cmd *command_node)
 {
     if (strcmp(*command_node->words, "echo") == 0)
     {
-        return builtin_echo(command_node->words + 1);
+        return builtin_echo(command_node->words + 1, command_node->num_words);
     }
     else if (strcmp(*command_node->words, "true") == 0)
     {
@@ -93,8 +98,74 @@ int execute_command(struct ast_cmd *command_node)
     }
     else
     {
-        fprintf(stderr, "Unknown command: %s\n", *command_node->words);
+        int status = execute_command_non_builtin(command_node->words,
+                                                 command_node->num_words);
+        if (status == -1)
+        {
+            fprintf(stderr, "Unknown command: %s\n", *command_node->words);
+        }
+        else
+        {
+            fprintf(stderr, "Unknown command: %s\n", *command_node->words);
+        }
         return -1;
+    }
+}
+
+int execute_command_non_builtin(char *argv[], size_t num_words)
+{
+    if (num_words == 0 || argv == NULL || argv[0] == NULL)
+    {
+        fprintf(stderr, "Invalid command.\n");
+        return -1;
+    }
+    pid_t pid = fork(); // Create a new process
+
+    if (pid == -1)
+    {
+        // If fork() returns -1, an error occurred
+        perror("fork failed");
+        return -1;
+    }
+    else if (pid == 0)
+    {
+        // Child process
+
+        // Ensure argv is NULL-terminated for execvp
+        char **exec_argv = malloc((num_words + 1) * sizeof(char *));
+        if (exec_argv == NULL)
+        {
+            perror("malloc failed");
+            exit(EXIT_FAILURE);
+        }
+        for (size_t i = 0; i < num_words; i++)
+        {
+            exec_argv[i] = argv[i];
+        }
+        exec_argv[num_words] = NULL; // Null-terminate the array
+
+        execvp(exec_argv[0],
+               exec_argv); // Replace the child process with the new program
+        // If execvp returns, it must have failed.
+        perror("execvp failed");
+        free(exec_argv); // Clean up the allocated memory
+        exit(EXIT_FAILURE); // Terminate child process
+    }
+    else
+    {
+        // Parent process
+        int status;
+        waitpid(pid, &status, 0); // Wait for the child to complete
+        if (WIFEXITED(status))
+        {
+            // Return child's exit status if it exited normally
+            return WEXITSTATUS(status);
+        }
+        else
+        {
+            // Child did not exit normally
+            return -1;
+        }
     }
 }
 
