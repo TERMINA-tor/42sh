@@ -100,10 +100,10 @@ int execute_command(struct ast_cmd *command_node)
 
 int execute_until(struct ast_loop *until_node)
 {
-    while (!evaluate_node(until_node->condition))
+    do
     {
         evaluate_node(until_node->then_body);
-    }
+    } while (!evaluate_node(until_node->condition));
 
     return builtin_true();
 }
