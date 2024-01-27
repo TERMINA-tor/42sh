@@ -1,7 +1,12 @@
 *.o
 *.s
 *.swp
+*.in
+*.Po
+Makefile
+*.a
 42sh
+test
 __pycache__
 .pytest_cache
 .clang-format
