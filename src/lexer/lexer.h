@@ -17,6 +17,7 @@ enum token_type
     TOKEN_WHILE,
     TOKEN_UNTIL,
     TOKEN_FOR,
+    TOKEN_IN,
     TOKEN_DO,
     TOKEN_DONE,
     TOKEN_WORD,
@@ -46,6 +47,7 @@ struct lexer
 {
     FILE *fd; // the file descriptor pointing to the input stream
     size_t offset; // how many characters have been read
+    int in_command; // are we in a command ?
 };
 
 // lookuptable structure

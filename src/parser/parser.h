@@ -32,4 +32,11 @@ enum parser_status parse_shell_command(struct ast **ast, struct lexer *lexer);
 enum parser_status parse_if(struct ast **ast, struct lexer *lexer);
 
 enum parser_status parse_else_clause(struct ast **ast, struct lexer *lexer);
+
+enum parser_status parse_while(struct ast **ast, struct lexer *lexer);
+
+enum parser_status parse_until(struct ast **ast, struct lexer *lexer);
+
+// enum parser_status parse_for(struct ast **ast, struct lexer *lexer);
+
 #endif /* ! PARSER_H */

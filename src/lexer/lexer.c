@@ -10,6 +10,7 @@ struct lexer *init_lexer(FILE *fd)
         return NULL;
     }
     lexer->fd = fd;
+    lexer->in_command = 0;
     return lexer;
 }
 
@@ -83,7 +84,7 @@ static int is_quote(char c)
 
 // return the type of the token valu
 // using a lookup table
-static enum token_type get_token_type(char *value)
+static enum token_type get_token_type(struct lexer *lexer, char *value)
 {
     const struct lookuptable table[] = { { TOKEN_EOF, "" },
                                          { TOKEN_EOL, "\n" },
@@ -111,7 +112,12 @@ static enum token_type get_token_type(char *value)
     for (size_t i = 0; i < table_length; i++)
     {
         if (!strcmp(table[i].value, value))
-            return table[i].token_type;
+        {
+            if (lexer->in_command && table[i].token_type >= TOKEN_IF && table[i].token_type <= TOKEN_DONE)
+                return TOKEN_WORD;
+            else
+                return table[i].token_type;
+        }
     }
     return TOKEN_WORD;
 }
@@ -224,7 +230,7 @@ struct token get_next_token(struct lexer *lexer)
     get_next(lexer, token_value);
 
     struct token new_token;
-    new_token.type = get_token_type(token_value->value);
+    new_token.type = get_token_type(lexer, token_value->value);
     if (new_token.type != TOKEN_WORD)
     {
         Dstring_free(token_value);
@@ -234,6 +240,12 @@ struct token get_next_token(struct lexer *lexer)
         new_token.value = token_value->value;
         free(token_value);
     }
+
+    if (new_token.type == TOKEN_SEMICOLON || new_token.type == TOKEN_EOL)
+        lexer->in_command = 0;
+    else if (new_token.type == TOKEN_WORD)
+        lexer->in_command = 1;
+
     return new_token;
 }
 
