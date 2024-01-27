@@ -39,13 +39,17 @@ int evaluate_node(struct ast *node)
     {
     case AST_IF:
         return evaluate_if((struct ast_if *)node);
+	break;
     case AST_COMMAND:
         return execute_command((struct ast_cmd *)node);
+	break;
     case AST_UNTIL:
         return execute_until((struct ast_loop *)node);
+	break;
     default:
         fprintf(stderr, "Unknown AST node type\n");
         return -1;
+	break;
     }
 }
 
@@ -106,7 +110,7 @@ int execute_command(struct ast_cmd *command_node)
         }
         else
         {
-            fprintf(stderr, "Unknown command: %s\n", *command_node->words);
+            return status;
         }
         return -1;
     }
