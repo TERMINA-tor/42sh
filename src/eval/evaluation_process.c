@@ -46,6 +46,8 @@ int evaluate_node(struct ast *node)
     case AST_UNTIL:
         return execute_until((struct ast_loop *)node);
 	break;
+    case AST_SEQUENCE:
+	return evaluate_ast((struct ast_sequence *)node);
     default:
         fprintf(stderr, "Unknown AST node type\n");
         return -1;
