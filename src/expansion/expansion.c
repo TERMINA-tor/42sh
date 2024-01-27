@@ -2,16 +2,16 @@
 
 //define a hashmap for assignement
 
-size_t handle_dollar(struct Dstring *dst, char *src)
+static size_t handle_dollar(struct Dstring *dst, char *src)
 {
 	src++; //skip the $
 	//TODO
 }
 
-size_t handle_single_quote(struct Dstring *dst, char *src)
+static size_t handle_single_quote(struct Dstring *dst, char *src)
 {
 	size_t len = 0;
-	for (size_t i = 1; src[i] && src[i] != '\'', i++) // since src[0] = '
+	for (size_t i = 1; src[i] && src[i] != '\''; i++) // since src[0] = '
 	{
 		Dstring_append(dst, src[i]);
 		len++;
@@ -21,7 +21,7 @@ size_t handle_single_quote(struct Dstring *dst, char *src)
 	return len;
 }
 
-size_t handle_double_quotes(struct Dstring *dst, char *src)
+static size_t handle_double_quote(struct Dstring *dst, char *src)
 {
 	size_t len = 0;
 	for (size_t i = 1; src[i] && src[i] != '"'; i++)
@@ -33,14 +33,14 @@ size_t handle_double_quotes(struct Dstring *dst, char *src)
 			i += offset;
 		}
 		else
-			Dstring_append(dst, src)
+			Dstring_append(dst, src[i]);
 	}
 	if (src[len - 1] == '"')
 		len++;
 	return len;
 }
 
-char *expand(const char *str)
+char *expand(char *str)
 {
 	struct Dstring *expanded = Dstring_new();
 	for (size_t i = 0; str[i] != 0; i++)
@@ -52,7 +52,7 @@ char *expand(const char *str)
 		else if (str[i] == '$')
 			i += handle_dollar(expanded, str + i);
 		else
-			Dstring_append(expanded, str[i])
+			Dstring_append(expanded, str[i]);
 	}
 	Dstring_append(expanded, 0);
 	char *retval = expanded->value;
