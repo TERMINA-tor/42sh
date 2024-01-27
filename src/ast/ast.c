@@ -39,35 +39,6 @@ struct ast_loop *ast_loop_init(enum ast_type type)
     return new_loop;
 }
 
-struct ast *ast_loop_condition_add(enum ast_type type, struct ast *ast, struct ast *condition)
-{
-    if (!condition)
-        return ast;
-    if (!ast)
-        ast = (struct ast *)ast_loop_init(type);
-    if (ast->type != AST_FOR && ast->type != AST_UNTIL){
-        free_ast(ast);
-        return NULL;
-    }
-    struct ast_loop *loop = (struct ast_loop *)ast;
-    loop->condition = condition;
-    return (struct ast*)loop;
-}
-
-struct ast *ast_loop_body_add(struct ast *ast, struct ast *body){
-    if (!body)
-        return ast;
-    if (!ast)
-        return NULL;
-    if (ast->type != AST_FOR && ast->type != AST_UNTIL){
-        free_ast(ast);
-        return NULL;
-    }
-    struct ast_loop *loop = (struct ast_loop *)ast;
-    loop->then_body = body;
-    return (struct ast*)loop;
-}
-
 struct ast *ast_sequence_add(struct ast *ast, struct ast *command) {
     if (!command)
         return ast;
@@ -86,48 +57,6 @@ struct ast *ast_sequence_add(struct ast *ast, struct ast *command) {
     sequence->commands[sequence->num_commands] = command;
     sequence->num_commands++;
     return (struct ast *)sequence;
-}
-
-struct ast *ast_if_condition_add(struct ast *ast, struct ast *condition){
-    if (!condition)
-        return ast;
-    if (!ast)
-        ast = (struct ast *)ast_if_init();
-    if (ast->type != AST_IF){
-        free_ast(ast);
-        return NULL;
-    }
-    struct ast_if *if_ast = (struct ast_if *)ast;
-    if_ast->condition = condition;
-    return (struct ast*)if_ast;
-}
-
-struct ast *ast_if_then_add(struct ast *ast, struct ast *then){
-    if (!then)
-        return ast;
-    if (!ast)
-        return NULL;
-    if (ast->type != AST_IF){
-        free_ast(ast);
-        return NULL;
-    }
-    struct ast_if *if_ast = (struct ast_if *)ast;
-    if_ast->then_body = then;
-    return (struct ast*)if_ast;
-}
-
-struct ast *ast_if_else_add(struct ast *ast, struct ast *ast_else){
-    if (!ast_else)
-        return ast;
-    if (!ast)
-        return NULL;
-    if (ast->type != AST_IF){
-        free_ast(ast);
-        return NULL;
-    }
-    struct ast_if *if_ast = (struct ast_if *)ast;
-    if_ast->else_body = ast_else;
-    return (struct ast*)if_ast;
 }
 
 struct ast *ast_cmd_word_add(struct ast *ast, char *word) {
