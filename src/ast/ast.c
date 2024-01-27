@@ -204,6 +204,9 @@ void free_ast(struct ast *node) {
             case AST_UNTIL:
                 free_loop((struct ast_loop *)node);
                 break;
+	    case AST_WHILE:
+		free_loop((struct ast_loop *)node);
+		break;
             // Ajoutez des cas pour d'autres types d'AST au besoin
         }
     }

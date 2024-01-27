@@ -9,6 +9,7 @@ enum ast_type
     AST_COMMAND,
     AST_SEQUENCE,
     AST_UNTIL,
+    AST_WHILE,
     AST_FOR
 };
 
