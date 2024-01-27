@@ -1,9 +1,11 @@
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "builtins.h"
+
+#define true 1
+#define false 0
 
 // The 'true' built-in function
 int builtin_true(void)
@@ -17,12 +19,12 @@ int builtin_false(void)
     return 1;
 }
 
-void print_args(char **argv, bool interpret_escapes);
+void print_args(char **argv, int interpret_escapes);
 // The 'echo' built-in function
 int builtin_echo(char **argv, size_t nbr_args)
 {
-    bool newline = true; // By default, echo prints a newline at the end
-    bool interpret_escapes =
+    int newline = true; // By default, echo prints a newline at the end
+    int interpret_escapes =
         false; // By default, do not interpret special characters
 
     // Skip the command name
@@ -32,7 +34,7 @@ int builtin_echo(char **argv, size_t nbr_args)
     while (i < nbr_args && *argv[i] == '-')
     {
         char *option = argv[i] + 1;
-        while (*option)
+        while (*option != 0)
         {
             switch (*option)
             {
@@ -66,7 +68,7 @@ int builtin_echo(char **argv, size_t nbr_args)
     return 0;
 }
 
-void print_args(char **argv, bool interpret_escapes)
+void print_args(char **argv, int interpret_escapes)
 {
     while (*argv)
     {
