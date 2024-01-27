@@ -1,7 +1,7 @@
 CC=gcc
-CFLAGS=-std=c99 -pedantic -Werror -Wall -Wextra -Wvla -g
+CFLAGS=-std=c99 -pedantic -Werror -Wall -Wextra -Wvla -o1 -g -fsanitize=address
 
-DEP = parser/parser_compound_list.c parser/parser_input.c parser/parser_rule_shell.c parser/parser_loops.c ast/ast.c input/input.c lexer/lexer.c utils/Dstring/dstring.c main.c
+DEP = parser/parser_compound_list.c parser/parser_input.c parser/parser_rule_shell.c parser/parser_loops.c ast/ast.c input/input.c lexer/lexer.c utils/Dstring/dstring.c main.c expansion/expansion.c
 
 all: test
 

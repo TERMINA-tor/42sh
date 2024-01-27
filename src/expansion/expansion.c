@@ -4,8 +4,11 @@
 
 static size_t handle_dollar(struct Dstring *dst, char *src)
 {
+	if (dst->value && dst->value[0] == '_')
+		return 0;
 	src++; //skip the $
 	//TODO
+	return 1;
 }
 
 static size_t handle_single_quote(struct Dstring *dst, char *src)
