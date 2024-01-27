@@ -1,4 +1,3 @@
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,19 +16,18 @@ int builtin_false(void)
     return 1;
 }
 
-void print_args(char **argv, bool interpret_escapes);
+void print_args(char **argv, int interpret_escapes, size_t len);
 // The 'echo' built-in function
 int builtin_echo(char **argv, size_t nbr_args)
 {
-    bool newline = true; // By default, echo prints a newline at the end
-    bool interpret_escapes =
-        false; // By default, do not interpret special characters
+    int newline = 1; // By default, echo prints a newline at the end
+    int interpret_escapes = 1; // By default, do not interpret special characters
 
     // Skip the command name
     size_t i = 1;
 
     // Process options
-    while (i < nbr_args && *argv[i] == '-')
+    while (i < (nbr_args - 1) && *argv[i] == '-')
     {
         char *option = argv[i] + 1;
         while (*option)
@@ -37,13 +35,13 @@ int builtin_echo(char **argv, size_t nbr_args)
             switch (*option)
             {
             case 'n':
-                newline = false;
+                newline = 0;
                 break;
             case 'e':
-                interpret_escapes = true;
+                interpret_escapes = 1;
                 break;
             case 'E':
-                interpret_escapes = false;
+                interpret_escapes = 0;
                 break;
             default:
                 fprintf(stderr, "Unknown option: -%c\n", *option);
@@ -55,7 +53,7 @@ int builtin_echo(char **argv, size_t nbr_args)
     }
 
     // Print arguments
-    print_args(argv, interpret_escapes);
+    print_args(argv, interpret_escapes, nbr_args - 1);
 
     if (newline)
     {
@@ -66,9 +64,10 @@ int builtin_echo(char **argv, size_t nbr_args)
     return 0;
 }
 
-void print_args(char **argv, bool interpret_escapes)
+void print_args(char **argv, int interpret_escapes, size_t len)
 {
-    while (*argv)
+    size_t i = 0;
+    while (i < len && *argv)
     {
         if (interpret_escapes)
         {
@@ -106,10 +105,11 @@ void print_args(char **argv, bool interpret_escapes)
         {
             printf("%s", *argv);
         }
-        if (*(argv + 1))
+        if ((i + 1) < len && *(argv + 1))
         {
             putchar(' '); // Separate arguments with a space
         }
         argv++;
+	i++;
     }
 }

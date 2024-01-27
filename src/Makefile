@@ -6,7 +6,7 @@ DEP = parser/parser_compound_list.c parser/parser_input.c parser/parser_rule_she
 all: test
 
 test: 
-	$(CC) $(CFLAGS) -D_POSIX_C_SOURCE=200809L -o test $(DEP)
+	$(CC) $(CFLAGS) -D_POSIX_C_SOURCE=200809L -o 42sh $(DEP)
 
 clean:
-	$(RM) *.o test
+	$(RM) *.o 42sh

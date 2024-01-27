@@ -13,13 +13,24 @@ int main(int argc, char **argv)
 	    return -1;
     struct lexer *lexer = init_lexer(fd);
     if (!lexer)
-	    return -1;
+	    goto error_1;
+
     struct ast *res = NULL;
-    printf("%d\n", parse_input(&res, lexer) == PARSER_OK);
-    evaluate_node(res);
+    enum parser_status status = parse_input(&res, lexer);
+    if (status == PARSER_UNEXPECTED_TOKEN)
+	    goto error_2;
+    int retval = evaluate_node(res);
     if (res)
 	    free_ast(res);
     if (lexer)
 	    lexer_free(lexer);
-    return 0;
+    return retval;
+
+error_1:
+    fprintf(stderr, "./42sh: failed to allocate memory\n");
+    return 127;
+
+error_2:
+    fprintf(stderr, "./42sh: parser: unexpected_token\n");
+    return 2;
 }
