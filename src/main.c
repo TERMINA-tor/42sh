@@ -1,4 +1,5 @@
 #include "ast/ast.h"
+#include "eval/evaluation_process.h"
 #include "expansion/expansion.h"
 #include "input/input.h"
 #include "lexer/lexer.h"
@@ -15,6 +16,7 @@ int main(int argc, char **argv)
 	    return -1;
     struct ast *res = NULL;
     printf("%d\n", parse_input(&res, lexer) == PARSER_OK);
+    evaluate_node(res);
     if (res)
 	    free_ast(res);
     if (lexer)
