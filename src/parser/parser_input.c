@@ -23,16 +23,23 @@ enum parser_status parse_and_or(struct ast **ast, struct lexer *lexer)
 
 enum parser_status parse_list(struct ast **ast, struct lexer *lexer)
 {
-    if (parse_and_or(ast, lexer) != PARSER_OK)
+    struct ast_sequence *sequence = ast_sequence_init();
+    struct ast *node = NULL;
+    if (parse_and_or(&node, lexer) != PARSER_OK)
         return PARSER_UNEXPECTED_TOKEN;
+    sequence = (struct ast_sequence *)ast_sequence_add((struct ast *)sequence, node);
     while (lexer_peek(lexer).type == TOKEN_SEMICOLON)
     {
         lexer_pop(lexer);
-        if (parse_and_or(ast, lexer) == PARSER_OK)
+        struct ast *next_node;
+        if (parse_and_or(&next_node, lexer) == PARSER_OK){
+            sequence = (struct ast_sequence *)ast_sequence_add((struct ast *)sequence, next_node);
             break;
+        }
     }
     if (lexer_peek(lexer).type == TOKEN_SEMICOLON)
         lexer_pop(lexer);
+    *ast = (struct ast *)sequence;
     return PARSER_OK;
 }
 
