@@ -27,16 +27,19 @@ enum parser_status parse_list(struct ast **ast, struct lexer *lexer)
     struct ast *node = NULL;
     if (parse_and_or(&node, lexer) != PARSER_OK)
     {
-	free_ast((struct ast *)sequence);
+        free_ast((struct ast *)sequence);
         return PARSER_UNEXPECTED_TOKEN;
     }
-    sequence = (struct ast_sequence *)ast_sequence_add((struct ast *)sequence, node);
+    sequence =
+        (struct ast_sequence *)ast_sequence_add((struct ast *)sequence, node);
     while (lexer_peek(lexer).type == TOKEN_SEMICOLON)
     {
         lexer_pop(lexer);
         struct ast *next_node;
-        if (parse_and_or(&next_node, lexer) == PARSER_OK){
-            sequence = (struct ast_sequence *)ast_sequence_add((struct ast *)sequence, next_node);
+        if (parse_and_or(&next_node, lexer) == PARSER_OK)
+        {
+            sequence = (struct ast_sequence *)ast_sequence_add(
+                (struct ast *)sequence, next_node);
             break;
         }
     }
@@ -66,7 +69,8 @@ enum parser_status parse_simple_command(struct ast **ast, struct lexer *lexer)
     *ast = new;
     if (!ast_cmd_word_add(*ast, lexer_pop(lexer).value))
         return PARSER_UNEXPECTED_TOKEN;
-    while (parse_element(ast, lexer) == PARSER_OK);
+    while (parse_element(ast, lexer) == PARSER_OK)
+        ;
     return PARSER_OK;
 }
 

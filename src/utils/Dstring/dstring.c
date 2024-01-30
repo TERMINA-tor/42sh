@@ -7,8 +7,8 @@ struct Dstring *Dstring_new(void)
 
 void Dstring_concat(struct Dstring *str, char *s)
 {
-	for (size_t i = 0; s[i]; i ++)
-		Dstring_append(str, s[i]);
+    for (size_t i = 0; s[i]; i++)
+        Dstring_append(str, s[i]);
 }
 
 void Dstring_append(struct Dstring *str, char c)

@@ -1,4 +1,5 @@
 #include "ast.h"
+
 #include <stdlib.h>
 
 void free_ast(struct ast *node);
@@ -39,18 +40,23 @@ struct ast_loop *ast_loop_init(enum ast_type type)
     return new_loop;
 }
 
-struct ast *ast_sequence_add(struct ast *ast, struct ast *command) {
+struct ast *ast_sequence_add(struct ast *ast, struct ast *command)
+{
     if (!command)
         return ast;
     if (!ast)
         ast = (struct ast *)ast_sequence_init();
-    if (ast->type != AST_SEQUENCE){
+    if (ast->type != AST_SEQUENCE)
+    {
         free_ast(ast);
         return NULL;
     }
     struct ast_sequence *sequence = (struct ast_sequence *)ast;
-    sequence->commands = realloc(sequence->commands, (sequence->num_commands + 1) * sizeof(struct ast *));
-    if (!sequence->commands){
+    sequence->commands =
+        realloc(sequence->commands,
+                (sequence->num_commands + 1) * sizeof(struct ast *));
+    if (!sequence->commands)
+    {
         free_ast(ast);
         return NULL;
     }
@@ -59,18 +65,21 @@ struct ast *ast_sequence_add(struct ast *ast, struct ast *command) {
     return (struct ast *)sequence;
 }
 
-struct ast *ast_cmd_word_add(struct ast *ast, char *word) {
+struct ast *ast_cmd_word_add(struct ast *ast, char *word)
+{
     if (!word)
         return ast;
     if (!ast)
         ast = (struct ast *)ast_cmd_init();
-    if (ast->type != AST_COMMAND){
+    if (ast->type != AST_COMMAND)
+    {
         free_ast(ast);
         return NULL;
     }
     struct ast_cmd *cmd = (struct ast_cmd *)ast;
     cmd->words = realloc(cmd->words, (cmd->num_words + 1) * sizeof(char *));
-    if (!cmd->words){
+    if (!cmd->words)
+    {
         free_ast(ast);
         return NULL;
     }
@@ -79,17 +88,21 @@ struct ast *ast_cmd_word_add(struct ast *ast, char *word) {
     return (struct ast *)cmd;
 }
 
-static void free_cmd(struct ast_cmd *cmd) {
-    if (cmd) {
-        for(size_t i = 0; i < cmd->num_words; i++)
+static void free_cmd(struct ast_cmd *cmd)
+{
+    if (cmd)
+    {
+        for (size_t i = 0; i < cmd->num_words; i++)
             free(cmd->words[i]);
         free(cmd->words);
         free(cmd);
     }
 }
 
-static void free_if(struct ast_if *if_node) {
-    if (if_node) {
+static void free_if(struct ast_if *if_node)
+{
+    if (if_node)
+    {
         free_ast(if_node->condition);
         free_ast(if_node->then_body);
         free_ast(if_node->else_body);
@@ -97,9 +110,12 @@ static void free_if(struct ast_if *if_node) {
     }
 }
 
-static void free_sequence(struct ast_sequence *sequence) {
-    if (sequence) {
-        for (size_t i = 0; i < sequence->num_commands; i++) {
+static void free_sequence(struct ast_sequence *sequence)
+{
+    if (sequence)
+    {
+        for (size_t i = 0; i < sequence->num_commands; i++)
+        {
             free_ast(sequence->commands[i]);
         }
         free(sequence->commands);
@@ -107,35 +123,40 @@ static void free_sequence(struct ast_sequence *sequence) {
     }
 }
 
-static void free_loop(struct ast_loop *loop_node) {
-    if (loop_node) {
+static void free_loop(struct ast_loop *loop_node)
+{
+    if (loop_node)
+    {
         free_ast(loop_node->condition);
         free_ast(loop_node->then_body);
         free(loop_node);
     }
 }
 
-void free_ast(struct ast *node) {
-    if (node) {
-        switch (node->type) {
-            case AST_IF:
-                free_if((struct ast_if *)node);
-                break;
-            case AST_COMMAND:
-                free_cmd((struct ast_cmd *)node);
-                break;
-            case AST_SEQUENCE:
-                free_sequence((struct ast_sequence *)node);
-                break;
-            case AST_FOR:
-                free_loop((struct ast_loop *)node);
-                break;
-            case AST_UNTIL:
-                free_loop((struct ast_loop *)node);
-                break;
-	    case AST_WHILE:
-		free_loop((struct ast_loop *)node);
-		break;
+void free_ast(struct ast *node)
+{
+    if (node)
+    {
+        switch (node->type)
+        {
+        case AST_IF:
+            free_if((struct ast_if *)node);
+            break;
+        case AST_COMMAND:
+            free_cmd((struct ast_cmd *)node);
+            break;
+        case AST_SEQUENCE:
+            free_sequence((struct ast_sequence *)node);
+            break;
+        case AST_FOR:
+            free_loop((struct ast_loop *)node);
+            break;
+        case AST_UNTIL:
+            free_loop((struct ast_loop *)node);
+            break;
+        case AST_WHILE:
+            free_loop((struct ast_loop *)node);
+            break;
             // Ajoutez des cas pour d'autres types d'AST au besoin
         }
     }

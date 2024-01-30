@@ -10,29 +10,29 @@ int main(int argc, char **argv)
 {
     FILE *fd = get_input(argc, argv);
     if (!fd)
-	    return -1;
+        return -1;
     struct lexer *lexer = init_lexer(fd);
     if (!lexer)
-	    goto error_1;
+        goto error_1;
 
     struct ast *res = NULL;
     int retval = 0;
     while (lexer_peek(lexer).type != TOKEN_EOF)
     {
-	    while (lexer_peek(lexer).type == TOKEN_EOL)
-		    lexer_pop(lexer);
-	    enum parser_status status = parse_input(&res, lexer);
-	    if (status == PARSER_UNEXPECTED_TOKEN)
-		    goto error_2;
-	    retval = evaluate_node(res);
-	    if (res)
-	    {
-		    free_ast(res);
-		    res = NULL;
-	    }
+        while (lexer_peek(lexer).type == TOKEN_EOL)
+            lexer_pop(lexer);
+        enum parser_status status = parse_input(&res, lexer);
+        if (status == PARSER_UNEXPECTED_TOKEN)
+            goto error_2;
+        retval = evaluate_node(res);
+        if (res)
+        {
+            free_ast(res);
+            res = NULL;
+        }
     }
     if (lexer)
-	    lexer_free(lexer);
+        lexer_free(lexer);
     return retval;
 
 error_1:
@@ -41,9 +41,9 @@ error_1:
 
 error_2:
     if (lexer)
-	    lexer_free(lexer);
+        lexer_free(lexer);
     if (res)
-	    free_ast(res);
+        free_ast(res);
     fprintf(stderr, "./42sh: parser: unexpected_token\n");
     return 2;
 }

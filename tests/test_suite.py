@@ -2,7 +2,7 @@ import subprocess as sp
 import pytest
 import os
 import sys
-shell = "./../42sh"
+shell = "./src/42sh"
 path = "step1/"
 path_cmd_list = path + "command_lists/"
 path_comments = path + "comments/"
@@ -14,7 +14,7 @@ def run_ref(file_path):
     return sp.run(['sh', './' + file_path], capture_output=True, text=True)
 
 def run_cmd(file_path):
-    return sp.run(["./42sh", "-e", file_path], capture_output=True, text=True)
+    return sp.run([shell, file_path], capture_output=True, text=True)
 
 def compare(output, awaited):
     assert output.stdout == awaited.stdout

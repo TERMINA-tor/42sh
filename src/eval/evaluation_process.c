@@ -1,3 +1,5 @@
+#include "evaluation_process.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,7 +9,6 @@
 
 #include "../ast/ast.h"
 #include "builtins.h"
-#include "evaluation_process.h"
 
 int evaluate_node(struct ast *node);
 int execute_command(struct ast_cmd *command_node);
@@ -40,19 +41,19 @@ int evaluate_node(struct ast *node)
     {
     case AST_IF:
         return evaluate_if((struct ast_if *)node);
-	break;
-    case AST_COMMAND:	
+        break;
+    case AST_COMMAND:
         return execute_command((struct ast_cmd *)node);
-	break;
+        break;
     case AST_UNTIL:
         return execute_until((struct ast_loop *)node);
-	break;
+        break;
     case AST_SEQUENCE:
-	return evaluate_ast((struct ast_sequence *)node);
+        return evaluate_ast((struct ast_sequence *)node);
     default:
         fprintf(stderr, "Unknown AST node type\n");
         return -1;
-	break;
+        break;
     }
 }
 
@@ -92,11 +93,11 @@ int evaluate_if(struct ast_if *if_node)
 int execute_command(struct ast_cmd *command_node)
 {
     struct ast_cmd *dupe = (struct ast_cmd *)command_node;
-    for (size_t i = 0; i < dupe->num_words; i++) //TODO
+    for (size_t i = 0; i < dupe->num_words; i++) // TODO
     {
-	    char *old_wd = dupe->words[i];
-	    dupe->words[i] = expand(old_wd);
-	    free(old_wd);
+        char *old_wd = dupe->words[i];
+        dupe->words[i] = expand(old_wd);
+        free(old_wd);
     }
     if (strcmp(*command_node->words, "echo") == 0)
     {

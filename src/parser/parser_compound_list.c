@@ -20,7 +20,8 @@ enum parser_status parse_compound_list(struct ast **ast, struct lexer *lexer)
     if (parse_and_or(&node, lexer) != PARSER_OK)
         return PARSER_UNEXPECTED_TOKEN;
 
-    sequence = (struct ast_sequence *)ast_sequence_add((struct ast *)sequence, node);
+    sequence =
+        (struct ast_sequence *)ast_sequence_add((struct ast *)sequence, node);
 
     while (lexer_peek(lexer).type == TOKEN_SEMICOLON
            || lexer_peek(lexer).type == TOKEN_EOL)
@@ -32,7 +33,8 @@ enum parser_status parse_compound_list(struct ast **ast, struct lexer *lexer)
         if (parse_and_or(&next_node, lexer) != PARSER_OK)
             break;
 
-    	sequence = (struct ast_sequence *)ast_sequence_add((struct ast *)sequence, next_node);
+        sequence = (struct ast_sequence *)ast_sequence_add(
+            (struct ast *)sequence, next_node);
     }
 
     if (lexer_peek(lexer).type == TOKEN_SEMICOLON)

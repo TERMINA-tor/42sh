@@ -37,13 +37,13 @@ FILE *get_input(int argc, char **argv)
                 return input_error(fd);
             setenv("PRETTY_PRINT", "1", 0);
         }
-	else if (!found_file)
-	{
-		found_file = 1;
-		fd = fopen(argv[i], "r");
-		if (!fd)
-			return input_error(fd);
-	}
+        else if (!found_file)
+        {
+            found_file = 1;
+            fd = fopen(argv[i], "r");
+            if (!fd)
+                return input_error(fd);
+        }
         else
             return input_error(fd);
     }

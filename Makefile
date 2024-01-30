@@ -8,5 +8,9 @@ all: test
 test: 
 	$(CC) $(CFLAGS) -D_POSIX_C_SOURCE=200809L -o src/42sh $(DEP)
 
+check:  test
+	python3 -m pytest tests/test_suite.py
+	make clean
+
 clean:
 	$(RM) *.o src/42sh
