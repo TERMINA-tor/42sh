@@ -10,7 +10,7 @@ bin_PROGRAMS = 42sh
     $(top_builddir)/src/ast/libast.a \
     $(top_builddir)/src/input/libinput.a \
     $(top_builddir)/src/eval/libeval.a \
-    $(top_builddir)/src/exansion/libexpansion.a \
+    $(top_builddir)/src/expansion/libexpansion.a \
     $(top_builddir)/src/utils/Dstring/libdstring.a
 
 
@@ -19,6 +19,6 @@ SUBDIRS = \
     ast \
     input \
     lexer \
-    eval\
+    eval \
     expansion \
-    utils
+    utils/Dstring
