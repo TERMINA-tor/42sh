@@ -159,6 +159,52 @@ static char handle_quotes(int *is_quoted, char least_quote, char curr)
     return *is_quoted ? curr : least_quote;
 }
 
+// tells wether word is an assignement word or not
+static int is_assignement_word(char *word)
+{
+	char least_quote = -1;
+	int in_quote = 0;
+	int is_escaped = 0;
+	int is_embeded = 0; // wheter = is between {} or not
+	for (size_t i = 0; word[i]; i ++)
+	{
+		if (is_quote(word[i]))
+			least_quote = handle_quotes(&in_quote, least_quote, word[i]);
+		if (in_quote)
+			continue;
+		else if (is_escaped)
+		{
+			is_escaped = 0;
+			continue;
+		}
+		else if (word[i] == '\\')
+		{
+			is_escaped = 1;
+			continue;
+		}
+		else if (word[i] == '{')
+		{
+			is_embeded += 1;
+			continue;
+		}
+		else if (word[i] == '}')
+		{
+			is_embeded -= 1;
+			continue;
+		}
+		else if (word[i] == '=')
+		{
+			if (is_embeded)
+				continue;
+			if (i == 0)
+				return 0;
+			return 1;	
+		}
+	}
+	return 0;
+}
+
+//gets the next word (in this case word = [:alphanum:])
 static void get_next(struct lexer *lexer, struct Dstring *value)
 {
     char previous = -1; // previous character
@@ -231,6 +277,7 @@ struct token get_next_token(struct lexer *lexer)
 
     struct token new_token;
     new_token.type = get_token_type(lexer, token_value->value);
+    
     if (new_token.type != TOKEN_WORD)
     {
         Dstring_free(token_value);
@@ -239,6 +286,8 @@ struct token get_next_token(struct lexer *lexer)
     {
         new_token.value = token_value->value;
         free(token_value);
+	if (is_assignement_word(new_token.value))
+		new_token.type = TOKEN_ASSIGNEMENT;
     }
 
     if (new_token.type == TOKEN_SEMICOLON || new_token.type == TOKEN_EOL)
@@ -256,11 +305,11 @@ struct token lexer_peek(struct lexer *lexer)
     size_t old_offset = lexer->offset;
 
     struct token tok = get_next_token(lexer);
-    if (tok.type == TOKEN_WORD)
+    if (tok.type == TOKEN_WORD || tok.type == TOKEN_ASSIGNEMENT)
         free(tok.value);
 
     size_t offset = lexer->offset - old_offset;
-    fseek(lexer->fd, (long)(-offset), SEEK_CUR);
+    fseek(lexer->fd, -offset, SEEK_CUR);
     lexer->offset = old_offset;
     return tok;
 }

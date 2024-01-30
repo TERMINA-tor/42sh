@@ -9,6 +9,7 @@
 
 enum token_type
 {
+    TOKEN_ASSIGNEMENT,
     TOKEN_IF,
     TOKEN_ELSE,
     TOKEN_ELIF,

@@ -40,6 +40,10 @@ error_1:
     return 127;
 
 error_2:
+    if (lexer)
+	    lexer_free(lexer);
+    if (res)
+	    free_ast(res);
     fprintf(stderr, "./42sh: parser: unexpected_token\n");
     return 2;
 }

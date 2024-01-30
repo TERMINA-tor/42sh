@@ -14,6 +14,7 @@ FILE *get_input(int argc, char **argv)
     if (argc > 3)
         return input_error(NULL);
 
+    int found_file = 0;
     FILE *fd = fdopen(0, "r");
     for (int i = 1; i < argc; i++)
     {
@@ -23,13 +24,6 @@ FILE *get_input(int argc, char **argv)
             if (i == argc)
                 return input_error(fd);
             fd = fmemopen(argv[i], strlen(argv[i]), "r");
-        }
-        else if (!strcmp(argv[i], "-e")) // change the way to handle files
-        {
-            if (i == argc)
-                return input_error(fd);
-            i++;
-            fd = fopen(argv[i], "r");
         }
         else if (!strcmp(argv[i], "--verbose"))
         {
@@ -43,6 +37,13 @@ FILE *get_input(int argc, char **argv)
                 return input_error(fd);
             setenv("PRETTY_PRINT", "1", 0);
         }
+	else if (!found_file)
+	{
+		found_file = 1;
+		fd = fopen(argv[i], "r");
+		if (!fd)
+			return input_error(fd);
+	}
         else
             return input_error(fd);
     }

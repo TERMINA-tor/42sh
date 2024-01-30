@@ -11,6 +11,7 @@ struct Dstring
 };
 
 struct Dstring *Dstring_new(void);
+void Dstring_concat(struct Dstring *str, char *s);
 void Dstring_append(struct Dstring *str, char c);
 void Dstring_free(struct Dstring *str);
 

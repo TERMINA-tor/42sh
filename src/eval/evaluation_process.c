@@ -7,6 +7,7 @@
 
 #include "../ast/ast.h"
 #include "builtins.h"
+#include "evaluation_process.h"
 
 int evaluate_node(struct ast *node);
 int execute_command(struct ast_cmd *command_node);
@@ -40,7 +41,7 @@ int evaluate_node(struct ast *node)
     case AST_IF:
         return evaluate_if((struct ast_if *)node);
 	break;
-    case AST_COMMAND:
+    case AST_COMMAND:	
         return execute_command((struct ast_cmd *)node);
 	break;
     case AST_UNTIL:
@@ -90,6 +91,13 @@ int evaluate_if(struct ast_if *if_node)
 
 int execute_command(struct ast_cmd *command_node)
 {
+    struct ast_cmd *dupe = (struct ast_cmd *)command_node;
+    for (size_t i = 0; i < dupe->num_words; i++) //TODO
+    {
+	    char *old_wd = dupe->words[i];
+	    dupe->words[i] = expand(old_wd);
+	    free(old_wd);
+    }
     if (strcmp(*command_node->words, "echo") == 0)
     {
         return builtin_echo(command_node->words + 1, command_node->num_words);
@@ -184,22 +192,3 @@ int execute_until(struct ast_loop *until_node)
 
     return builtin_true();
 }
-
-// char **convert_children_to_argv(struct ast *node)
-// {
-//     char **argv = malloc((node->nbchildren + 2) * sizeof(char *));
-//     if (!argv)
-//     {
-//         perror("malloc failed");
-//         exit(EXIT_FAILURE);
-//     }
-//
-//     argv[0] = node->value; // Command name
-//     for (size_t i = 0; i < node->nbchildren; i++)
-//     {
-//         argv[i + 1] = node->children[i]->value;
-//     }
-//     argv[node->nbchildren + 1] = NULL; // Null-terminate the argv array
-//
-//     return argv;
-// }

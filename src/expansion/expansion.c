@@ -1,14 +1,40 @@
-#include "../utils/Dstring/dstring.h"
+#include "expansion.h"
 
-//define a hashmap for assignement
+struct dictionary *init_dictionary(char *name, char *value)
+{
+        struct dictionary *dict = calloc(1, sizeof(struct dictionary));
+        if (!dict)
+                return NULL;
+        dict->name = name;
+        dict->value = value;
+
+        return dict;
+}
 
 static size_t handle_dollar(struct Dstring *dst, char *src)
 {
-	if (dst->value && dst->value[0] == '_')
-		return 0;
-	src++; //skip the $
-	//TODO
-	return 1;
+	struct Dstring *parameter = Dstring_new();
+	char *dupe = src;
+	int is_embeded = 0;
+	dupe++;
+	
+	if (*dupe == '{')
+	{
+		is_embeded = 1;
+		dupe++;
+	}
+	while (*dupe && *dupe != '$')
+	{
+		if (*dupe == '}')
+			dupe--;
+		Dstring_append(parameter, *dupe);
+	}
+	Dstring_append(parameter, 0);
+	Dstring_concat(dst, (char *)getenv(parameter->value));
+	Dstring_free(parameter);
+	if (is_embeded)
+		return -1;
+	return dupe - src;
 }
 
 static size_t handle_single_quote(struct Dstring *dst, char *src)

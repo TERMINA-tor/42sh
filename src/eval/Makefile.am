@@ -1,5 +1,0 @@
-lib_LIBRARIES = libeval.a
-
-libeval_a_SOURCES = basic_builtins.c builtins.h evaluation_process.c evaluation_process.h
-libeval_a_CFLAGS = -Wall -Wextra -Werror -std=c99 -pedantic -D_POSIX_C_SOURCE=200809L
-libeval_a_CPPFLAGS = -I$(top_srcdir)
