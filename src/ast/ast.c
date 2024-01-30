@@ -13,6 +13,16 @@ struct ast_sequence *ast_sequence_init(void)
     return new_sequence;
 }
 
+struct ast_redirection *ast_redirection_init(enum token_type type)
+{
+    struct ast_redirection *new_redirection = calloc(1, sizeof(struct ast_redirection));
+    if (!new_redirection)
+        return NULL;
+    new_redirection->base.type = AST_REDIRECTION;
+    new_redirection->type = type;
+    return new_redirection;
+}
+
 struct ast_if *ast_if_init(void)
 {
     struct ast_if *new_if = calloc(1, sizeof(struct ast_if));
@@ -133,6 +143,14 @@ static void free_loop(struct ast_loop *loop_node)
     }
 }
 
+static void free_redirection(struct ast_redirection *redirection) {
+    if (redirection) {
+        free_ast(redirection->command);
+        free(redirection->filename);
+        free(redirection);
+    }
+}
+
 void free_ast(struct ast *node)
 {
     if (node)
@@ -156,6 +174,9 @@ void free_ast(struct ast *node)
             break;
         case AST_WHILE:
             free_loop((struct ast_loop *)node);
+            break;
+        case AST_REDIRECTION:
+            free_redirection((struct ast_redirection *)node);
             break;
             // Ajoutez des cas pour d'autres types d'AST au besoin
         }
