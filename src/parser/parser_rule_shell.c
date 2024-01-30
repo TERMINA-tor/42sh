@@ -62,7 +62,7 @@ enum parser_status parse_else_clause(struct ast **ast, struct lexer *lexer)
         lexer_pop(lexer);
         *ast = (struct ast *)ast_if_init();
 
-        if (parse_compound_list(&(((struct ast_if *)ast)->condition), lexer)
+        if (parse_compound_list(&(((struct ast_if *)(*ast))->condition), lexer)
             != PARSER_OK) // check compound list
             return PARSER_UNEXPECTED_TOKEN;
 
@@ -70,11 +70,11 @@ enum parser_status parse_else_clause(struct ast **ast, struct lexer *lexer)
             return PARSER_UNEXPECTED_TOKEN;
         lexer_pop(lexer);
 
-        if (parse_compound_list(&(((struct ast_if *)ast)->then_body), lexer)
+        if (parse_compound_list(&(((struct ast_if *)(*ast))->then_body), lexer)
             != PARSER_OK) // check compound list
             return PARSER_UNEXPECTED_TOKEN;
 
-        if (parse_else_clause(&(((struct ast_if *)ast)->else_body), lexer)
+        if (parse_else_clause(&(((struct ast_if *)(*ast))->else_body), lexer)
             != PARSER_OK) // check else_clause
             return PARSER_UNEXPECTED_TOKEN;
         return PARSER_OK;

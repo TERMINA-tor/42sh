@@ -20,9 +20,9 @@ int evaluate_ast(struct ast_sequence *node)
     for (size_t i = 0; i < node->num_commands; i++)
     {
         int res = evaluate_node(*(node->commands + i));
-        if (res == -1)
+        if (res != builtin_true())
         {
-            return res;
+            return builtin_false();
         }
     }
 

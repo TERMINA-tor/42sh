@@ -24,7 +24,7 @@ FILE *get_input(int argc, char **argv)
                 return input_error(fd);
             fd = fmemopen(argv[i], strlen(argv[i]), "r");
         }
-        else if (!strcmp(argv[i], "-e"))
+        else if (!strcmp(argv[i], "-e")) // change the way to handle files
         {
             if (i == argc)
                 return input_error(fd);

@@ -16,12 +16,21 @@ int main(int argc, char **argv)
 	    goto error_1;
 
     struct ast *res = NULL;
-    enum parser_status status = parse_input(&res, lexer);
-    if (status == PARSER_UNEXPECTED_TOKEN)
-	    goto error_2;
-    int retval = evaluate_node(res);
-    if (res)
-	    free_ast(res);
+    int retval = 0;
+    while (lexer_peek(lexer).type != TOKEN_EOF)
+    {
+	    while (lexer_peek(lexer).type == TOKEN_EOL)
+		    lexer_pop(lexer);
+	    enum parser_status status = parse_input(&res, lexer);
+	    if (status == PARSER_UNEXPECTED_TOKEN)
+		    goto error_2;
+	    retval = evaluate_node(res);
+	    if (res)
+	    {
+		    free_ast(res);
+		    res = NULL;
+	    }
+    }
     if (lexer)
 	    lexer_free(lexer);
     return retval;

@@ -1,5 +1,0 @@
-echo toto; #this is a comment
-if true #this is also a comment
-echo "hey! $toto || $tata && titi"#thisisnotone
-else #this is
-echo "hmmmm"
