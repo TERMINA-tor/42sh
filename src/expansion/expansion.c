@@ -11,6 +11,12 @@ struct dictionary *init_dictionary(char *name, char *value)
     return dict;
 }
 
+static int is_valid(char c)
+{
+    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
+        || (c >= '0' && c <= '9') || c == '_';
+}
+
 static size_t handle_dollar(struct Dstring *dst, char *src)
 {
     struct Dstring *parameter = Dstring_new();
@@ -23,18 +29,21 @@ static size_t handle_dollar(struct Dstring *dst, char *src)
         is_embeded = 1;
         dupe++;
     }
-    while (*dupe && *dupe != '$')
+    while (*dupe && is_valid(*dupe))
     {
-        if (*dupe == '}')
-            dupe--;
         Dstring_append(parameter, *dupe);
+        dupe++;
     }
+
     Dstring_append(parameter, 0);
     Dstring_concat(dst, (char *)getenv(parameter->value));
     Dstring_free(parameter);
     if (is_embeded)
         return -1;
-    return dupe - src;
+    size_t retval = dupe - src;
+    if (retval)
+        retval--;
+    return retval;
 }
 
 static size_t handle_single_quote(struct Dstring *dst, char *src)
