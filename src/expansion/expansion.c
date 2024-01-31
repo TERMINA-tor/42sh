@@ -200,6 +200,7 @@ static size_t handle_single_quote(struct Dstring *dst, char *src)
     }
     if (src[len] == 0)
 	    return 42; //error
+    len++;
     return len;
 }
 
