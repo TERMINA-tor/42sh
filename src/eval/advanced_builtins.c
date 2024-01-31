@@ -15,7 +15,7 @@ int builtin_exit(struct ast_cmd *cmd)
         exit_status = atoi(cmd->words[1]); // Convert the argument to an integer
     }
 
-    // Release resources here (if any)
+    clean_ast();
     exit(exit_status); // Exit the program with the provided status
     return 0;
 }

@@ -20,22 +20,26 @@ int execute_while(struct ast_loop *until_node);
 int evaluate_redirections(struct ast *node);
 int execute_command_non_builtin(char *argv[], size_t num_words);
 int inside_loop = 0;
-struct ast_sequence *first_root;
+// struct ast_sequence *first_root;
+struct ast *first_root;
 
-int evaluate_ast(struct ast_sequence *node)
+// int evaluate_ast(struct ast_sequence *node)
+int evaluate_ast(struct ast *node)
 {
     first_root = node;
-    for (size_t i = 0; i < node->num_commands; i++)
+    // for (size_t i = 0; i < node->num_commands; i++)
+    // {
+    // int res = evaluate_node(*(node->commands + i));
+    int res = evaluate_node(node);
+    if (res != builtin_true())
     {
-        int res = evaluate_node(*(node->commands + i));
-        if (res != builtin_true())
-        {
-            return res;
-        }
+        return res;
     }
+    // }
 
     return builtin_true();
 }
+
 int evaluate_node(struct ast *node)
 {
     if (node == NULL)
@@ -57,9 +61,9 @@ int evaluate_node(struct ast *node)
     case AST_WHILE:
         return execute_while((struct ast_loop *)node);
         break;
-    case AST_SEQUENCE:
-	    return evaluate_ast((struct ast_sequence *)node);
-        break;
+    // case AST_SEQUENCE:
+    //     return evaluate_ast((struct ast_sequence *)node);
+    //     break;
     case AST_REDIRECTION:
         return evaluate_redirections(node);
         break;
@@ -68,6 +72,11 @@ int evaluate_node(struct ast *node)
         return -1;
         break;
     }
+}
+
+void clean_ast(void)
+{
+    free_ast(first_root);
 }
 
 int evaluate_if(struct ast_if *if_node)
@@ -252,17 +261,20 @@ int execute_until(struct ast_loop *until_node)
     while (!evaluate_node(until_node->condition) && inside_loop)
     {
         evaluate_node(until_node->then_body);
-    } while (evaluate_node(until_node->condition));
+    }
+    inside_loop = 0;
 
     return builtin_true();
 }
 
 int execute_while(struct ast_loop *until_node)
 {
-    do
+    inside_loop = 1;
+    while (evaluate_node(until_node->condition) && inside_loop)
     {
         evaluate_node(until_node->then_body);
-    } while (!evaluate_node(until_node->condition));
+    }
+    inside_loop = 0;
 
     return builtin_true();
 }
