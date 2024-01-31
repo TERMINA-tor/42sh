@@ -145,7 +145,7 @@ static void free_loop(struct ast_loop *loop_node)
 
 static void free_redirection(struct ast_redirection *redirection) {
     if (redirection) {
-        free_ast(redirection->command);
+        free_cmd(redirection->command);
         free(redirection->filename);
         free(redirection);
     }

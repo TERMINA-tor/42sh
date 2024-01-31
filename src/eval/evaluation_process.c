@@ -9,13 +9,15 @@
 
 #include "../ast/ast.h"
 #include "builtins.h"
+#include "eval_redirections.h"
 
 int evaluate_node(struct ast *node);
 int execute_command(struct ast_cmd *command_node);
 char **convert_children_to_argv(struct ast *node);
 int evaluate_if(struct ast_if *if_node);
 int execute_until(struct ast_loop *until_node);
-int execute_while(struct ast_loop *while_node);
+int execute_while(struct ast_loop *until_node);
+int evaluate_redirections(struct ast *node);
 int execute_command_non_builtin(char *argv[], size_t num_words);
 int inside_loop = 0;
 struct ast_sequence *first_root;
@@ -56,7 +58,11 @@ int evaluate_node(struct ast *node)
         return execute_while((struct ast_loop *)node);
         break;
     case AST_SEQUENCE:
-        return evaluate_ast((struct ast_sequence *)node);
+	    return evaluate_ast((struct ast_sequence *)node);
+        break;
+    case AST_REDIRECTION:
+        return evaluate_redirections(node);
+        break;
     default:
         fprintf(stderr, "Unknown AST node type\n");
         return -1;
@@ -246,20 +252,41 @@ int execute_until(struct ast_loop *until_node)
     while (!evaluate_node(until_node->condition) && inside_loop)
     {
         evaluate_node(until_node->then_body);
-    }
-    inside_loop = 0;
+    } while (evaluate_node(until_node->condition));
 
     return builtin_true();
 }
 
-int execute_while(struct ast_loop *while_node)
+int execute_while(struct ast_loop *until_node)
 {
-    inside_loop = 1;
-    while (evaluate_node(while_node->condition) && inside_loop)
+    do
     {
-        evaluate_node(while_node->then_body);
-    }
-    inside_loop = 0;
+        evaluate_node(until_node->then_body);
+    } while (!evaluate_node(until_node->condition));
 
     return builtin_true();
 }
+
+int evaluate_redirections(struct ast *node)
+{
+    return eval_redirections(node);
+}
+
+// char **convert_children_to_argv(struct ast *node)
+// {
+//     char **argv = malloc((node->nbchildren + 2) * sizeof(char *));
+//     if (!argv)
+//     {
+//         perror("malloc failed");
+//         exit(EXIT_FAILURE);
+//     }
+//
+//     argv[0] = node->value; // Command name
+//     for (size_t i = 0; i < node->nbchildren; i++)
+//     {
+//         argv[i + 1] = node->children[i]->value;
+//     }
+//     argv[node->nbchildren + 1] = NULL; // Null-terminate the argv array
+//
+//     return argv;
+// }

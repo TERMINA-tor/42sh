@@ -46,7 +46,7 @@ static void push_output(char c, struct lexer *lexer)
 // that can be used in an operator or not
 static int is_operator(char c)
 {
-    char *operators = "&|<>;\n";
+    char *operators = "&|<>;=\n";
     for (size_t i = 0; operators[i]; i++)
     {
         if (c == operators[i])
@@ -107,7 +107,8 @@ static enum token_type get_token_type(struct lexer *lexer, char *value)
                                          { TOKEN_APPEND_OUTPUT, ">>" },
                                          { TOKEN_AMPREDIR_OUTPUT, ">&" },
                                          { TOKEN_AMPREDIR_INPUT, "<&" },
-                                         { TOKEN_FORCE_OUTPUT_REDIR, ">|" } };
+                                         { TOKEN_FORCE_OUTPUT_REDIR, ">|" },
+                                         { TOKEN_REDIRECT_INPUT_OUTPUT, "<>" } };
     size_t table_length = sizeof(table) / sizeof(struct lookuptable);
     for (size_t i = 0; i < table_length; i++)
     {
