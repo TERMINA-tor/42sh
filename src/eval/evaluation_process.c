@@ -20,8 +20,8 @@ int execute_while(struct ast_loop *until_node);
 int evaluate_redirections(struct ast *node);
 int eval_pipeline(struct ast *node);
 int execute_command_non_builtin(char *argv[], size_t num_words);
-int inside_loop = 0;
-// struct ast_sequence *first_root;
+int loop_depth = 0;
+int break_called = 0;
 struct ast *first_root;
 
 int evaluate_ast(struct ast *node)
@@ -166,11 +166,11 @@ int execute_command(struct ast_cmd *command_node)
     }
     else if (strcmp(*command_node->words, "continue") == 0)
     {
-        return builtin_continue(inside_loop);
+        return builtin_continue(loop_depth);
     }
     else if (strcmp(*command_node->words, "break") == 0)
     {
-        return builtin_break(inside_loop);
+        return builtin_break(loop_depth);
     }
     else if (strcmp(*command_node->words, "exit") == 0)
     {
@@ -208,7 +208,7 @@ int execute_command(struct ast_cmd *command_node)
 
 void set_loop_break_flag()
 {
-    inside_loop = 0;
+    break_called = 1;
 }
 
 int execute_command_non_builtin(char *argv[], size_t num_words)
@@ -270,25 +270,27 @@ int execute_command_non_builtin(char *argv[], size_t num_words)
 
 int execute_until(struct ast_loop *until_node)
 {
-    inside_loop = 1;
-    while (!evaluate_node(until_node->condition) && inside_loop)
+    loop_depth++;
+    while (!evaluate_node(until_node->condition) && loop_depth > 0
+           && !break_called)
     {
         evaluate_node(until_node->then_body);
     }
-    inside_loop = 0;
-
+    loop_depth--;
+    break_called = 0;
     return builtin_true();
 }
 
-int execute_while(struct ast_loop *until_node)
+int execute_while(struct ast_loop *while_node)
 {
-    inside_loop = 1;
-    while (evaluate_node(until_node->condition) && inside_loop)
+    loop_depth++;
+    while (evaluate_node(while_node->condition) && loop_depth > 0
+           && !break_called)
     {
-        evaluate_node(until_node->then_body);
+        evaluate_node(while_node->then_body);
     }
-    inside_loop = 0;
-
+    loop_depth--;
+    break_called = 0;
     return builtin_true();
 }
 

@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 #include "../ast/ast.h"
+#include "../utils/Dstring/dstring.h"
 
 // each of the following are built-in functions
 
@@ -15,7 +16,7 @@ int builtin_echo(char **argv, size_t nbr_args);
 
 int builtin_exit(struct ast_cmd *cmd);
 
-// int builtin_cd(struct ast_cmd *cmd);
+int builtin_cd(char **argv, int nbr_args);
 
 int builtin_export(struct ast_cmd *cmd);
 

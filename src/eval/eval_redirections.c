@@ -16,29 +16,29 @@ int eval_redirections(struct ast *node)
     int ret = 0;
     switch (redirection->type)
     {
-        case TOKEN_REDIRECT_INPUT:
-            ret = eval_redir_input(redirection);
-            break;
-        case TOKEN_REDIRECT_OUTPUT:
-            ret = eval_redir_output(redirection);
-            break;
-        case TOKEN_APPEND_OUTPUT:
-            ret = eval_append_output(redirection);
-            break;
-        case TOKEN_AMPREDIR_OUTPUT:
-            ret = eval_ampredir_output(redirection);
-            break;
-        case TOKEN_AMPREDIR_INPUT:
-            ret = eval_ampredir_input(redirection);
-            break;
-        case TOKEN_FORCE_OUTPUT_REDIR:
-            ret = eval_force_output_redir(redirection);
-            break;
-        case TOKEN_REDIRECT_INPUT_OUTPUT:
-            ret = eval_redir_input_output(redirection);
-            break;
-        default:
-            break;
+    case TOKEN_REDIRECT_INPUT:
+        ret = eval_redir_input(redirection);
+        break;
+    case TOKEN_REDIRECT_OUTPUT:
+        ret = eval_redir_output(redirection);
+        break;
+    case TOKEN_APPEND_OUTPUT:
+        ret = eval_append_output(redirection);
+        break;
+    case TOKEN_AMPREDIR_OUTPUT:
+        ret = eval_ampredir_output(redirection);
+        break;
+    case TOKEN_AMPREDIR_INPUT:
+        ret = eval_ampredir_input(redirection);
+        break;
+    case TOKEN_FORCE_OUTPUT_REDIR:
+        ret = eval_force_output_redir(redirection);
+        break;
+    case TOKEN_REDIRECT_INPUT_OUTPUT:
+        ret = eval_redir_input_output(redirection);
+        break;
+    default:
+        break;
     }
     return ret;
 }
