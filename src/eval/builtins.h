@@ -13,15 +13,15 @@ int builtin_false(void);
 
 int builtin_echo(char **argv, size_t nbr_args);
 
-void builtin_exit(struct ast_cmd *cmd);
+int builtin_exit(struct ast_cmd *cmd);
 
-// void builtin_cd(struct ast_cmd *cmd);
+// int builtin_cd(struct ast_cmd *cmd);
 
-void builtin_export(struct ast_cmd *cmd);
+int builtin_export(struct ast_cmd *cmd);
 
-// void builtin_dot(struct ast_cmd *cmd);
+// int builtin_dot(struct ast_cmd *cmd);
 
-void builtin_unset(struct ast_cmd *cmd);
+int builtin_unset(struct ast_cmd *cmd);
 
 int builtin_continue(struct ast_cmd *cmd, int inside_loop);
 

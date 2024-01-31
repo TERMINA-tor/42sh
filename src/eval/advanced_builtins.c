@@ -7,7 +7,7 @@
 #include "builtins.h"
 #include "evaluation_process.h"
 
-void builtin_exit(struct ast_cmd *cmd)
+int builtin_exit(struct ast_cmd *cmd)
 {
     int exit_status = 0; // Default exit status
     if (cmd->num_words > 1)
@@ -17,9 +17,10 @@ void builtin_exit(struct ast_cmd *cmd)
 
     // Release resources here (if any)
     exit(exit_status); // Exit the program with the provided status
+    return 0;
 }
 
-void builtin_export(struct ast_cmd *cmd)
+int builtin_export(struct ast_cmd *cmd)
 {
     for (size_t i = 1; i < cmd->num_words; ++i)
     {
@@ -37,14 +38,16 @@ void builtin_export(struct ast_cmd *cmd)
             // variable is already in the environment
         }
     }
+    return 0;
 }
 
-void builtin_unset(struct ast_cmd *cmd)
+int builtin_unset(struct ast_cmd *cmd)
 {
     for (size_t i = 1; i < cmd->num_words; ++i)
     {
         unsetenv(cmd->words[i]); // Remove the variable from the environment
     }
+    return 0;
 }
 
 int builtin_continue(struct ast_cmd *cmd, int inside_loop)

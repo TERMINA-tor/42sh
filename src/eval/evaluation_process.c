@@ -18,7 +18,6 @@ int execute_until(struct ast_loop *until_node);
 int execute_while(struct ast_loop *while_node);
 int execute_command_non_builtin(char *argv[], size_t num_words);
 int inside_loop = 0;
-int break_loop = 0;
 
 int evaluate_ast(struct ast_sequence *node)
 {
@@ -135,6 +134,26 @@ int execute_command(struct ast_cmd *command_node)
     {
         return builtin_false();
     }
+    else if (strcmp(*command_node->words, "continue") == 0)
+    {
+        return builtin_continue(command_node, inside_loop);
+    }
+    else if (strcmp(*command_node->words, "break") == 0)
+    {
+        return builtin_break(command_node, inside_loop);
+    }
+    else if (strcmp(*command_node->words, "exit") == 0)
+    {
+        return builtin_exit(command_node);
+    }
+    else if (strcmp(*command_node->words, "export") == 0)
+    {
+        return builtin_export(command_node);
+    }
+    else if (strcmp(*command_node->words, "unset") == 0)
+    {
+        return builtin_unset(command_node);
+    }
     else
     {
         if (command_node->num_words && is_reserved_word(command_node->words[0]))
@@ -159,7 +178,7 @@ int execute_command(struct ast_cmd *command_node)
 
 void set_loop_break_flag()
 {
-    break_loop = 1;
+    inside_loop = 0;
 }
 
 int execute_command_non_builtin(char *argv[], size_t num_words)
@@ -221,28 +240,24 @@ int execute_command_non_builtin(char *argv[], size_t num_words)
 
 int execute_until(struct ast_loop *until_node)
 {
-    while (!evaluate_node(until_node->condition) && !break_loop)
+    inside_loop = 1;
+    while (!evaluate_node(until_node->condition) && inside_loop)
     {
         evaluate_node(until_node->then_body);
     }
-    if (break_loop)
-    {
-        break_loop = 0;
-    }
+    inside_loop = 0;
 
     return builtin_true();
 }
 
 int execute_while(struct ast_loop *while_node)
 {
-    while (evaluate_node(while_node->condition) && !break_loop)
+    inside_loop = 1;
+    while (evaluate_node(while_node->condition) && inside_loop)
     {
         evaluate_node(while_node->then_body);
     }
-    if (break_loop)
-    {
-        break_loop = 0;
-    }
+    inside_loop = 0;
 
     return builtin_true();
 }
