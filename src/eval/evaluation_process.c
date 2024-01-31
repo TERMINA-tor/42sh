@@ -90,6 +90,40 @@ int evaluate_if(struct ast_if *if_node)
     return 0;
 }
 
+static int is_reserved_word(char *s)
+{
+	const char *reserved_words[] = { "" ,
+                                         "\n",
+                                         "if",
+                                         "else",
+                                         "then",
+                                         "elif",
+                                         "fi",
+                                         "while",
+                                         "until",
+                                         "for",
+                                         "do",
+                                         "done",
+                                         "&&",
+                                         "||",
+                                         "|",
+                                         ";",
+                                         "<",
+                                         ">" ,
+                                         ">>",
+                                         ">&",
+                                         "<&",
+                                          ">|" };
+	size_t len = sizeof(reserved_words) / sizeof(char *);
+	for (size_t i = 0; i < len; i++)
+	{
+		if (!strcmp(s, reserved_words[i]))
+			return 1;
+	}
+	return 0;
+
+}
+
 int execute_command(struct ast_cmd *command_node)
 {
     struct ast_cmd *dupe = (struct ast_cmd *)command_node;
@@ -113,6 +147,11 @@ int execute_command(struct ast_cmd *command_node)
     }
     else
     {
+	if (command_node->num_words && is_reserved_word(command_node->words[0]))
+	{
+		fprintf(stderr, "./42sh: %s is not a command.\n", command_node->words[0]);
+		return 2;
+	}
         int status = execute_command_non_builtin(command_node->words,
                                                  command_node->num_words);
         if (status == -1)
