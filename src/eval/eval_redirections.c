@@ -241,34 +241,3 @@ static int eval_redir_input_output(struct ast_redirection *redirection)
     }
     return ret;
 }
-
-static int eval_redir_output_input(struct ast_redirection *redirection)
-{
-    int fd;
-    int ret = 0;
-    fd = open(redirection->filename, O_RDWR | O_CREAT | O_TRUNC, 0644);
-    if (fd == -1)
-    {
-        perror("open");
-        return 1;
-    }
-    ret = dup2(fd, 1);
-    if (ret == -1)
-    {
-        perror("dup2");
-        return 1;
-    }
-    ret = dup2(fd, 0);
-    if (ret == -1)
-    {
-        perror("dup2");
-        return 1;
-    }
-    ret = evaluate_node(redirection->command);
-    if (close(fd) == -1)
-    {
-        perror("close");
-        return 1;
-    }
-    return ret;
-}
