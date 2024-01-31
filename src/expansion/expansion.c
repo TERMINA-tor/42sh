@@ -14,7 +14,8 @@ struct dictionary *init_dictionary(char *name, char *value)
 static int is_valid(char c)
 {
     return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
-        || (c >= '0' && c <= '9') || c == '_';
+        || (c >= '0' && c <= '9') || c == '_' || c == '@' || c == '#'
+	|| c == '$' || c == '*' || c == '?';
 }
 
 static size_t handle_dollar(struct Dstring *dst, char *src)
@@ -34,9 +35,17 @@ static size_t handle_dollar(struct Dstring *dst, char *src)
         Dstring_append(parameter, *dupe);
         dupe++;
     }
-
+    if (*dupe == '}')
+    {
+	    if (is_embeded)
+	    	is_embeded -= 1;
+	    else // } shall not be remarked here
+		    dupe--;
+    }
     Dstring_append(parameter, 0);
-    Dstring_concat(dst, (char *)getenv(parameter->value));
+    char *tmp = getenv(parameter->value);
+    if (tmp)
+    	Dstring_concat(dst, tmp);
     Dstring_free(parameter);
     if (is_embeded)
         return -1;
@@ -97,7 +106,7 @@ char *expand(char *str)
         else if (str[i] == '"' && !is_escaped)
             i += handle_double_quote(expanded, str + i);
         else if (str[i] == '$' && !is_escaped)
-            i += handle_dollar(expanded, str + i);
+            i += handle_dollar(expanded, str + i); // must handle error cases here TODO
         else
 	{
 	    is_escaped = 0;

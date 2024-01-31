@@ -122,21 +122,45 @@ static enum token_type get_token_type(struct lexer *lexer, char *value)
     return TOKEN_WORD;
 }
 
+static int is_valid_variable(char c)
+{
+	int k = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || (c == '@') 
+		|| (c == '*') || (c == '#');
+	return k;
+}
+
 // handle the case of an unquoted ${}
 static int handle_dollar(struct lexer *lexer, struct Dstring *value)
 {
     char tmp = read_from_input(lexer);
-    if (tmp != '{')
+    int is_embeded = 0;
+    if (tmp == '{')
     {
-        push_output(tmp, lexer);
-        return 0;
+	Dstring_append(value, '{');
+	tmp = read_from_input(lexer);
+	is_embeded = 1; // only $name && ${name} will be tested
     }
-    while (tmp != EOF && tmp != '}')
+    while (tmp != EOF && is_valid_variable(tmp))
     {
         Dstring_append(value, tmp);
+	tmp = read_from_input(lexer);
     }
-    if (tmp == '}')
-        push_output('}', lexer);
+    
+    if (tmp != EOF && !is_valid_variable(tmp))
+    {
+	    if (tmp == '}')
+	    {
+		    if (is_embeded)
+		    {
+			    is_embeded = 0;
+			    Dstring_append(value, '}');
+		    }
+		    else
+			    push_output('}', lexer);
+	    }
+	    else
+		    push_output(tmp, lexer);
+    }
     return 1;
 }
 
