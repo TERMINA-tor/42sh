@@ -54,8 +54,8 @@ static size_t handle_single_quote(struct Dstring *dst, char *src)
         Dstring_append(dst, src[i]);
         len++;
     }
-    if (src[len - 1] == '\'')
-        len++;
+    if (src[len] == 0)
+	    return 42; //error
     return len;
 }
 
@@ -71,26 +71,38 @@ static size_t handle_double_quote(struct Dstring *dst, char *src)
             i += offset;
         }
         else
+	{
+	    len++;
             Dstring_append(dst, src[i]);
+	}
     }
-    if (src[len - 1] == '"')
-        len++;
+    if (src[len] == 0)
+        return 42; //error
     return len;
 }
 
 char *expand(char *str)
 {
     struct Dstring *expanded = Dstring_new();
+    int is_escaped = 0;
     for (size_t i = 0; str[i] != 0; i++)
     {
-        if (str[i] == '\'')
+	if (str[i] == '\\' && !is_escaped)
+	{
+		is_escaped = 1;
+		continue;
+	}
+	else if (str[i] == '\'' && !is_escaped)
             i += handle_single_quote(expanded, str + i);
-        else if (str[i] == '"')
+        else if (str[i] == '"' && !is_escaped)
             i += handle_double_quote(expanded, str + i);
-        else if (str[i] == '$')
+        else if (str[i] == '$' && !is_escaped)
             i += handle_dollar(expanded, str + i);
         else
+	{
+	    is_escaped = 0;
             Dstring_append(expanded, str[i]);
+	}
     }
     Dstring_append(expanded, 0);
     char *retval = expanded->value;

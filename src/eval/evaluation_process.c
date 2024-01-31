@@ -24,7 +24,7 @@ int evaluate_ast(struct ast_sequence *node)
         int res = evaluate_node(*(node->commands + i));
         if (res != builtin_true())
         {
-            return builtin_false();
+            return res;
         }
     }
 
@@ -164,7 +164,7 @@ int execute_command_non_builtin(char *argv[], size_t num_words)
         // If execvp returns, it must have failed.
         perror("execvp failed");
         free(exec_argv); // Clean up the allocated memory
-        exit(EXIT_FAILURE); // Terminate child process
+        exit(127); // Terminate child process
     }
     else
     {
@@ -174,7 +174,7 @@ int execute_command_non_builtin(char *argv[], size_t num_words)
         if (WIFEXITED(status))
         {
             // Return child's exit status if it exited normally
-            return WEXITSTATUS(status);
+            return  WEXITSTATUS(status);
         }
         else
         {

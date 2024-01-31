@@ -25,11 +25,13 @@ int main(int argc, char **argv)
         if (status == PARSER_UNEXPECTED_TOKEN)
             goto error_2;
         retval = evaluate_node(res);
-        if (res)
+	if (res)
         {
             free_ast(res);
             res = NULL;
         }
+	if (retval)
+		break;
     }
     if (lexer)
         lexer_free(lexer);

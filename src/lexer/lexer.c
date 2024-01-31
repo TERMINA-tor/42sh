@@ -204,6 +204,10 @@ static int is_assignement_word(char *word)
 	return 0;
 }
 
+static int is_valid_comment_start(char curr, char previous, char is_quoted)
+{
+	return curr == '#' && !is_quoted && !is_quote(previous) && previous == -1;
+}
 //gets the next word (in this case word = [:alphanum:])
 static void get_next(struct lexer *lexer, struct Dstring *value)
 {
@@ -228,7 +232,10 @@ static void get_next(struct lexer *lexer, struct Dstring *value)
         {
             char tmp = read_from_input(lexer);
             if (tmp != '\n' && (!is_quoted))
+	    {
+		Dstring_append(value, curr);
                 push_output(tmp, lexer); // \\n = line continuation
+	    }
         }
         else if ((curr == '\'' || curr == '\"') && !is_delimitor(previous))
         {
@@ -258,7 +265,7 @@ static void get_next(struct lexer *lexer, struct Dstring *value)
         }
         else if ((!is_operator(curr)) && (!is_delimitor(curr)))
             Dstring_append(value, curr);
-        else if (curr == '#' && !is_quoted && !is_quote(previous))
+        else if (is_valid_comment_start(curr, previous, is_quoted))
             handle_comment(lexer);
         else
             Dstring_append(value, curr);
@@ -266,7 +273,7 @@ static void get_next(struct lexer *lexer, struct Dstring *value)
         previous = curr;
         curr = read_from_input(lexer);
     }
-    Dstring_append(value, 0);
+    // Dstring_append(value, 0);
 }
 
 // simply returns the next available token
@@ -274,7 +281,7 @@ struct token get_next_token(struct lexer *lexer)
 {
     struct Dstring *token_value = Dstring_new();
     get_next(lexer, token_value);
-
+    Dstring_append(token_value, 0);
     struct token new_token;
     new_token.type = get_token_type(lexer, token_value->value);
     
