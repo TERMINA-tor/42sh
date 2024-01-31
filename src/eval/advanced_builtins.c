@@ -50,7 +50,7 @@ int builtin_unset(struct ast_cmd *cmd)
     return 0;
 }
 
-int builtin_continue(struct ast_cmd *cmd, int inside_loop)
+int builtin_continue(int inside_loop)
 {
     if (!inside_loop)
     {
@@ -63,7 +63,7 @@ int builtin_continue(struct ast_cmd *cmd, int inside_loop)
     return 0;
 }
 
-int builtin_break(struct ast_cmd *cmd, int inside_loop)
+int builtin_break(int inside_loop)
 {
     if (!inside_loop)
     {

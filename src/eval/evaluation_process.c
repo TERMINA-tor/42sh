@@ -18,9 +18,11 @@ int execute_until(struct ast_loop *until_node);
 int execute_while(struct ast_loop *while_node);
 int execute_command_non_builtin(char *argv[], size_t num_words);
 int inside_loop = 0;
+struct ast_sequence *first_root;
 
 int evaluate_ast(struct ast_sequence *node)
 {
+    first_root = node;
     for (size_t i = 0; i < node->num_commands; i++)
     {
         int res = evaluate_node(*(node->commands + i));
@@ -136,11 +138,11 @@ int execute_command(struct ast_cmd *command_node)
     }
     else if (strcmp(*command_node->words, "continue") == 0)
     {
-        return builtin_continue(command_node, inside_loop);
+        return builtin_continue(inside_loop);
     }
     else if (strcmp(*command_node->words, "break") == 0)
     {
-        return builtin_break(command_node, inside_loop);
+        return builtin_break(inside_loop);
     }
     else if (strcmp(*command_node->words, "exit") == 0)
     {
