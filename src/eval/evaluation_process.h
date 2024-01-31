@@ -4,5 +4,6 @@
 #include "../expansion/expansion.h"
 
 int evaluate_node(struct ast *node);
+void set_loop_break_flag();
 
 #endif // EVALUATION_PROCESS_H

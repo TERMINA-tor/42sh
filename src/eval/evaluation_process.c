@@ -15,7 +15,10 @@ int execute_command(struct ast_cmd *command_node);
 char **convert_children_to_argv(struct ast *node);
 int evaluate_if(struct ast_if *if_node);
 int execute_until(struct ast_loop *until_node);
+int execute_while(struct ast_loop *while_node);
 int execute_command_non_builtin(char *argv[], size_t num_words);
+int inside_loop = 0;
+int break_loop = 0;
 
 int evaluate_ast(struct ast_sequence *node)
 {
@@ -47,6 +50,9 @@ int evaluate_node(struct ast *node)
         break;
     case AST_UNTIL:
         return execute_until((struct ast_loop *)node);
+        break;
+    case AST_WHILE:
+        return execute_while((struct ast_loop *)node);
         break;
     case AST_SEQUENCE:
         return evaluate_ast((struct ast_sequence *)node);
@@ -92,37 +98,21 @@ int evaluate_if(struct ast_if *if_node)
 
 static int is_reserved_word(char *s)
 {
-	const char *reserved_words[] = { "" ,
-                                         "\n",
-                                         "if",
-                                         "else",
-                                         "then",
-                                         "elif",
-                                         "fi",
-                                         "while",
-                                         "until",
-                                         "for",
-                                         "do",
-                                         "done",
-                                         "&&",
-                                         "||",
-                                         "|",
-                                         ";",
-                                         "<",
-                                         ">" ,
-                                         ">>",
-                                         ">&",
-                                         "<&",
-                                          ">|" };
-	size_t len = sizeof(reserved_words) / sizeof(char *);
-	for (size_t i = 0; i < len; i++)
-	{
-		if (!strcmp(s, reserved_words[i]))
-			return 1;
-	}
-	return 0;
-
+    const char *reserved_words[] = { "",     "\n",   "if",    "else",  "then",
+                                     "elif", "fi",   "while", "until", "for",
+                                     "do",   "done", "&&",    "||",    "|",
+                                     ";",    "<",    ">",     ">>",    ">&",
+                                     "<&",   ">|" };
+    size_t len = sizeof(reserved_words) / sizeof(char *);
+    for (size_t i = 0; i < len; i++)
+    {
+        if (!strcmp(s, reserved_words[i]))
+            return 1;
+    }
+    return 0;
 }
+
+void set_loop_break_flag();
 
 int execute_command(struct ast_cmd *command_node)
 {
@@ -147,11 +137,12 @@ int execute_command(struct ast_cmd *command_node)
     }
     else
     {
-	if (command_node->num_words && is_reserved_word(command_node->words[0]))
-	{
-		fprintf(stderr, "./42sh: %s is not a command.\n", command_node->words[0]);
-		return 2;
-	}
+        if (command_node->num_words && is_reserved_word(command_node->words[0]))
+        {
+            fprintf(stderr, "./42sh: %s is not a command.\n",
+                    command_node->words[0]);
+            return 2;
+        }
         int status = execute_command_non_builtin(command_node->words,
                                                  command_node->num_words);
         if (status == -1)
@@ -164,6 +155,11 @@ int execute_command(struct ast_cmd *command_node)
         }
         return -1;
     }
+}
+
+void set_loop_break_flag()
+{
+    break_loop = 1;
 }
 
 int execute_command_non_builtin(char *argv[], size_t num_words)
@@ -213,7 +209,7 @@ int execute_command_non_builtin(char *argv[], size_t num_words)
         if (WIFEXITED(status))
         {
             // Return child's exit status if it exited normally
-            return  WEXITSTATUS(status);
+            return WEXITSTATUS(status);
         }
         else
         {
@@ -225,10 +221,28 @@ int execute_command_non_builtin(char *argv[], size_t num_words)
 
 int execute_until(struct ast_loop *until_node)
 {
-    do
+    while (!evaluate_node(until_node->condition) && !break_loop)
     {
         evaluate_node(until_node->then_body);
-    } while (!evaluate_node(until_node->condition));
+    }
+    if (break_loop)
+    {
+        break_loop = 0;
+    }
+
+    return builtin_true();
+}
+
+int execute_while(struct ast_loop *while_node)
+{
+    while (evaluate_node(while_node->condition) && !break_loop)
+    {
+        evaluate_node(while_node->then_body);
+    }
+    if (break_loop)
+    {
+        break_loop = 0;
+    }
 
     return builtin_true();
 }
