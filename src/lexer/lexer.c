@@ -108,7 +108,7 @@ static enum token_type get_token_type(struct lexer *lexer, char *value)
                                          { TOKEN_AMPREDIR_OUTPUT, ">&" },
                                          { TOKEN_AMPREDIR_INPUT, "<&" },
                                          { TOKEN_FORCE_OUTPUT_REDIR, ">|" },
-                                         { TOKEN_REDIRECT_OUTPUT_INPUT, "<>" } };
+                                         { TOKEN_REDIRECT_INPUT_OUTPUT, "<>" } };
     size_t table_length = sizeof(table) / sizeof(struct lookuptable);
     for (size_t i = 0; i < table_length; i++)
     {

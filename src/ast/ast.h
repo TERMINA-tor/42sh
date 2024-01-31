@@ -48,7 +48,7 @@ struct ast_sequence {
 
 struct ast_redirection {
     struct ast base;
-    struct ast *command;    // the command to redirect
+    struct ast_cmd *command;    // the command to redirect
     char *filename; // the filename to redirect to
     enum token_type type; // the type of redirection
 };
