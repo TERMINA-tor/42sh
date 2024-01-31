@@ -14,7 +14,8 @@ enum ast_type
     AST_UNTIL,
     AST_WHILE,
     AST_FOR,
-    AST_REDIRECTION
+    AST_REDIRECTION,
+    AST_PIPELINE,
 };
 
 struct ast {
@@ -53,8 +54,15 @@ struct ast_redirection {
     enum token_type type; // the type of redirection
 };
 
+struct ast_pipeline {
+    struct ast base;
+    struct ast *left_cmd;   // the left command
+    struct ast *right_cmd;  // the right command
+};
+
 struct ast_sequence *ast_sequence_init(void);   // init the sequence, list of command
 struct ast_redirection *ast_redirection_init(enum token_type type);   // init redirection node
+struct ast_pipeline *ast_pipeline_init(void);   // init pipeline node
 struct ast_if *ast_if_init(void);   // init if node
 struct ast *ast_cmd_init(void);   // init commands node
 struct ast_loop *ast_loop_init(enum ast_type type); // init loop node

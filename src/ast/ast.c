@@ -13,6 +13,15 @@ struct ast_sequence *ast_sequence_init(void)
     return new_sequence;
 }
 
+struct ast_pipeline *ast_pipeline_init(void)
+{
+    struct ast_pipeline *new_pipeline = calloc(1, sizeof(struct ast_pipeline));
+    if (!new_pipeline)
+        return NULL;
+    new_pipeline->base.type = AST_PIPELINE;
+    return new_pipeline;
+}
+
 struct ast_redirection *ast_redirection_init(enum token_type type)
 {
     struct ast_redirection *new_redirection = calloc(1, sizeof(struct ast_redirection));
@@ -151,6 +160,14 @@ static void free_redirection(struct ast_redirection *redirection) {
     }
 }
 
+static void free_pipeline(struct ast_pipeline *pipeline) {
+    if (pipeline) {
+        free_ast(pipeline->left_cmd);
+        free_ast(pipeline->right_cmd);
+        free(pipeline);
+    }
+}
+
 void free_ast(struct ast *node)
 {
     if (node)
@@ -178,6 +195,10 @@ void free_ast(struct ast *node)
         case AST_REDIRECTION:
             free_redirection((struct ast_redirection *)node);
             break;
+        case AST_PIPELINE:
+            free_pipeline((struct ast_pipeline *)node);
+            break;
+
             // Ajoutez des cas pour d'autres types d'AST au besoin
         }
     }

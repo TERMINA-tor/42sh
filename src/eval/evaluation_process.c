@@ -18,6 +18,7 @@ int evaluate_if(struct ast_if *if_node);
 int execute_until(struct ast_loop *until_node);
 int execute_while(struct ast_loop *until_node);
 int evaluate_redirections(struct ast *node);
+int eval_pipeline(struct ast *node);
 int execute_command_non_builtin(char *argv[], size_t num_words);
 int inside_loop = 0;
 // struct ast_sequence *first_root;
@@ -37,17 +38,17 @@ int evaluate_ast(struct ast *node)
 
 int evaluate_ast_sequence(struct ast_sequence *node)
 {
+    int ret = 0;
     for (size_t i = 0; i < node->num_commands; i++)
     {
         // int res =
-        evaluate_node(*(node->commands + i));
+        ret = evaluate_node(*(node->commands + i));
         // if (res != builtin_true())
         // {
         // return res;
         // }
     }
-
-    return builtin_true();
+    return ret;
 }
 int evaluate_node(struct ast *node)
 {
@@ -75,6 +76,9 @@ int evaluate_node(struct ast *node)
         break;
     case AST_REDIRECTION:
         return evaluate_redirections(node);
+        break;
+    case AST_PIPELINE:
+        return eval_pipeline(node);
         break;
     default:
         fprintf(stderr, "Unknown AST node type\n");
@@ -127,7 +131,7 @@ static int is_reserved_word(char *s)
                                      "elif", "fi",   "while", "until", "for",
                                      "do",   "done", "&&",    "||",    "|",
                                      ";",    "<",    ">",     ">>",    ">&",
-                                     "<&",   ">|" };
+                                     "<&",   ">|", "<>" };
     size_t len = sizeof(reserved_words) / sizeof(char *);
     for (size_t i = 0; i < len; i++)
     {

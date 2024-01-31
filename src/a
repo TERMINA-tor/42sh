@@ -1,0 +1,15 @@
+42sh
+42sh-main.o
+a
+ast
+config.log
+eval
+expansion
+input
+lexer
+main.c
+Makefile
+Makefile.am
+Makefile.in
+parser
+utils
