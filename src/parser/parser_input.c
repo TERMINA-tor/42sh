@@ -27,6 +27,8 @@ enum parser_status parse_list(struct ast **ast, struct lexer *lexer)
     struct ast *node = NULL;
     if (parse_and_or(&node, lexer) != PARSER_OK)
     {
+        if (node)
+            free_ast(node);
         free_ast((struct ast *)sequence);
         return PARSER_UNEXPECTED_TOKEN;
     }
