@@ -9,6 +9,7 @@ path_comments = path + "comments/"
 path_if_commands = path + "if_commands/"
 path_quotes = path + "quotes/"
 path_simple_cmd = path + "simple_commands/"
+path_random = "tests/random/"
 
 def run_ref(file_path):
     return sp.run(['sh', './' + file_path], capture_output=True, text=True)
@@ -191,4 +192,16 @@ def test_one_arg():
 
 #random tests
 
-test_bad_if1()
+def test_random1():
+    file_path = path_random + "test_random1.sh"
+    return compare(run_ref(file_path), run_cmd(file_path))
+
+def test_random2():
+    file_path = path_random + "test_random2.sh"
+    return compare(run_ref(file_path), run_cmd(file_path))
+
+def test_random2():
+    file_path = path_random + "test_random3.sh"
+    return compare(run_ref(file_path), run_cmd(file_path))
+
+
