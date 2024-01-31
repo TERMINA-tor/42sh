@@ -23,23 +23,32 @@ int inside_loop = 0;
 // struct ast_sequence *first_root;
 struct ast *first_root;
 
-// int evaluate_ast(struct ast_sequence *node)
 int evaluate_ast(struct ast *node)
 {
     first_root = node;
-    // for (size_t i = 0; i < node->num_commands; i++)
-    // {
-    // int res = evaluate_node(*(node->commands + i));
     int res = evaluate_node(node);
     if (res != builtin_true())
     {
         return res;
     }
-    // }
 
     return builtin_true();
 }
 
+int evaluate_ast_sequence(struct ast_sequence *node)
+{
+    for (size_t i = 0; i < node->num_commands; i++)
+    {
+        // int res =
+        evaluate_node(*(node->commands + i));
+        // if (res != builtin_true())
+        // {
+        // return res;
+        // }
+    }
+
+    return builtin_true();
+}
 int evaluate_node(struct ast *node)
 {
     if (node == NULL)
@@ -61,9 +70,9 @@ int evaluate_node(struct ast *node)
     case AST_WHILE:
         return execute_while((struct ast_loop *)node);
         break;
-    // case AST_SEQUENCE:
-    //     return evaluate_ast((struct ast_sequence *)node);
-    //     break;
+    case AST_SEQUENCE:
+        return evaluate_ast_sequence((struct ast_sequence *)node);
+        break;
     case AST_REDIRECTION:
         return evaluate_redirections(node);
         break;
