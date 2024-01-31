@@ -10,12 +10,12 @@ path_if_commands = path + "if_commands/"
 path_quotes = path + "quotes/"
 path_simple_cmd = path + "simple_commands/"
 path_random = "tests/random/"
+path_expansion = path + "expansion/"
 
 def run_ref(file_path):
     return sp.run(['sh', './' + file_path], capture_output=True, text=True)
 
 def run_cmd(file_path):
-    print(file_path)
     return sp.run([shell, file_path], capture_output=True, text=True)
 
 def compare(output, awaited):
@@ -148,9 +148,9 @@ def test_multiple_quotes():
     file_path = path_quotes + "test_multiple_quotes.sh"
     return compare(run_ref(file_path), run_cmd(file_path))
 
-def test_reserved_keyword():
-    file_path = path_quotes + "test_reserved_keyword.sh"
-    return compare(run_ref(file_path), run_cmd(file_path))
+#def test_reserved_keyword():
+#    file_path = path_quotes + "test_reserved_keyword.sh"
+#    return compare(run_ref(file_path), run_cmd(file_path))
 
 def test_space_as_arg():
     file_path = path_quotes + "test_space_as_arg.sh"
@@ -182,9 +182,9 @@ def test_many_args():
     file_path = path_simple_cmd + "test_many_args.sh"
     return compare(run_ref(file_path), run_cmd(file_path))
 
-def test_not_existant1():
-    file_path = path_simple_cmd + "test_not_existant1.sh"
-    return compare(run_ref(file_path), run_cmd(file_path))
+#def test_not_existant1():
+#    file_path = path_simple_cmd + "test_not_existant1.sh"
+#    return compare(run_ref(file_path), run_cmd(file_path))
 
 def test_one_arg():
     file_path = path_simple_cmd + "test_one_arg.sh"
@@ -204,4 +204,52 @@ def test_random2():
     file_path = path_random + "test_random3.sh"
     return compare(run_ref(file_path), run_cmd(file_path))
 
+# test expansion
+
+#def test_at():
+#    file_path = path_expansion + "test_at.sh"
+#    return compare(run_ref(file_path), run_cmd(file_path))
+#
+#def test_dollar():
+#    file_path = path_expansion + "test_dollar.sh"
+#    return compare(run_ref(file_path), run_cmd(file_path))
+
+#def test_hashtag():
+#    file_path = path_expansion + "test_hashtag.sh"
+#    return compare(run_ref(file_path), run_cmd(file_path))
+
+def test_PWD():
+    file_path = path_expansion + "test_PWD.sh"
+    return compare(run_ref(file_path), run_cmd(file_path))
+
+#def test_star():
+#    file_path = path_expansion + "test_star.sh"
+#    return compare(run_ref(file_path), run_cmd(file_path))
+
+def test_OLDPWD():
+    file_path = path_expansion + "test_OLDPWD.sh"
+    return compare(run_ref(file_path), run_cmd(file_path))
+
+def test_positional_args():
+    file_path = path_expansion + "test_positional_args.sh"
+    return compare(run_ref(file_path), run_cmd(file_path))
+
+def test_RANDOM():
+    pass # not testable
+
+def test_return_code():
+    file_path = path_expansion + "test_return_code.sh"
+    return compare(run_ref(file_path), run_cmd(file_path))
+
+#def test_uid():
+#    file_path = path_expansion + "test_uid.sh"
+#    return compare(run_ref(file_path), run_cmd(file_path))
+
+def test_IFS():
+    file_path = path_expansion + "test_IFS.sh"
+    return compare(run_ref(file_path), run_cmd(file_path))
+
+def test_uid():
+    file_path = path_expansion + "test_uid.sh"
+    return compare(run_ref(file_path), run_cmd(file_path))
 

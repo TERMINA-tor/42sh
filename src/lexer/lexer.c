@@ -269,8 +269,9 @@ static void get_next(struct lexer *lexer, struct Dstring *value)
         else if ((curr == '$') && (!is_quoted)) // rule_5
         {
             Dstring_append(value, curr);
-            if (handle_dollar(lexer, value))
-                break;
+            handle_dollar(lexer, value);
+	    //if (handle_dollar(lexer, value))
+              //  break;
         }
         else if ((!is_quoted) && is_operator(curr) && !is_delimitor(previous))
         {

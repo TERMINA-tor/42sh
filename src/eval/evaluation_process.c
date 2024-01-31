@@ -127,30 +127,36 @@ static int is_reserved_word(char *s)
 int execute_command(struct ast_cmd *command_node)
 {
     struct ast_cmd *dupe = (struct ast_cmd *)command_node;
+    struct Dlist *list = Dlist_init();
     for (size_t i = 0; i < dupe->num_words; i++) // TODO
     {
         char *old_wd = dupe->words[i];
-        dupe->words[i] = expand(old_wd);
-        free(old_wd);
+        expand(list, old_wd);
+	free(old_wd);
     }
+    free(dupe->words);
+    dupe->words = list->list;
+    dupe->num_words = list->size;
+    free(list);
+    int retval = 0;
     if (strcmp(*command_node->words, "echo") == 0)
     {
-        return builtin_echo(command_node->words + 1, command_node->num_words);
+        retval = builtin_echo(command_node->words + 1, command_node->num_words);
     }
     else if (strcmp(*command_node->words, "true") == 0)
     {
-        return builtin_true();
+        retval =  builtin_true();
     }
     else if (strcmp(*command_node->words, "false") == 0)
     {
-        return builtin_false();
+        retval =  builtin_false();
     }
     else
     {
 	if (command_node->num_words && is_reserved_word(command_node->words[0]))
 	{
 		fprintf(stderr, "./42sh: %s is not a command.\n", command_node->words[0]);
-		return 2;
+		retval = 2;
 	}
         int status = execute_command_non_builtin(command_node->words,
                                                  command_node->num_words);
@@ -160,10 +166,11 @@ int execute_command(struct ast_cmd *command_node)
         }
         else
         {
-            return status;
+            retval = status;
         }
-        return -1;
+        retval = -1;
     }
+    return retval;
 }
 
 int execute_command_non_builtin(char *argv[], size_t num_words)

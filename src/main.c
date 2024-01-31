@@ -6,8 +6,19 @@
 #include "parser/parser.h"
 #include "utils/Dstring/dstring.h"
 
+struct cache g_cache;
+
+void init_cache(int argc, char **argv)
+{
+	g_cache.argc = argc;
+	g_cache.argv =argv;
+	g_cache.dictionary = NULL;
+	g_cache.least_retval = 0;
+}
+
 int main(int argc, char **argv)
 {
+    init_cache(argc, argv);
     FILE *fd = get_input(argc, argv);
     if (!fd)
         return -1;
