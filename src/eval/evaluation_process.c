@@ -32,11 +32,8 @@ int evaluate_ast(struct ast_sequence *node)
 }
 int evaluate_node(struct ast *node)
 {
-    if (node == NULL)
-    {
-        return -1;
-    }
-
+    if (!node)
+	    return -1;
     switch (node->type)
     {
     case AST_IF:

@@ -32,6 +32,8 @@ int main(int argc, char **argv)
     {
         while (lexer_peek(lexer).type == TOKEN_EOL)
             lexer_pop(lexer);
+	if (lexer_peek(lexer).type == TOKEN_EOF)
+		break;
         enum parser_status status = parse_input(&res, lexer);
         if (status == PARSER_UNEXPECTED_TOKEN)
             goto error_2;
@@ -41,12 +43,13 @@ int main(int argc, char **argv)
             free_ast(res);
             res = NULL;
         }
-	if (retval)
+	g_cache.least_retval = retval;
+	if (retval != 0 && retval != 1)
 		break;
     }
     if (lexer)
         lexer_free(lexer);
-    return retval;
+    return g_cache.least_retval;
 
 error_1:
     fprintf(stderr, "./42sh: failed to allocate memory\n");
