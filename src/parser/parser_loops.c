@@ -7,52 +7,60 @@
 
 enum parser_status parse_while(struct ast **ast, struct lexer *lexer)
 {
-    if (lexer_peek(lexer).type != TOKEN_WHILE)
-        return PARSER_UNEXPECTED_TOKEN;
-    lexer_pop(lexer);
-
     struct ast_loop *node = ast_loop_init(AST_WHILE);
 
+    if (lexer_peek(lexer).type != TOKEN_WHILE)
+        goto error;
+    lexer_pop(lexer);
+
     if (parse_compound_list(&(node->condition), lexer) != PARSER_OK)
-        return PARSER_UNEXPECTED_TOKEN;
+        goto error;
 
     if (lexer_peek(lexer).type != TOKEN_DO)
-        return PARSER_UNEXPECTED_TOKEN;
+        goto error;
     lexer_pop(lexer);
 
     if (parse_compound_list(&(node->then_body), lexer) != PARSER_OK)
-        return PARSER_UNEXPECTED_TOKEN;
+        goto error;
 
     if (lexer_peek(lexer).type != TOKEN_DONE)
-        return PARSER_UNEXPECTED_TOKEN;
+        goto error;
     lexer_pop(lexer);
 
     *ast = (struct ast *)node;
     return PARSER_OK;
+
+    error:
+        free_ast((struct ast *)node);
+        return PARSER_UNEXPECTED_TOKEN;
 }
 
 enum parser_status parse_until(struct ast **ast, struct lexer *lexer)
 {
-    if (lexer_peek(lexer).type != TOKEN_UNTIL)
-        return PARSER_UNEXPECTED_TOKEN;
-    lexer_pop(lexer);
-
     struct ast_loop *node = ast_loop_init(AST_UNTIL);
 
+    if (lexer_peek(lexer).type != TOKEN_UNTIL)
+        goto error;
+    lexer_pop(lexer);
+
     if (parse_compound_list(&(node->condition), lexer) != PARSER_OK)
-        return PARSER_UNEXPECTED_TOKEN;
+        goto error;
 
     if (lexer_peek(lexer).type != TOKEN_DO)
-        return PARSER_UNEXPECTED_TOKEN;
+        goto error;
     lexer_pop(lexer);
 
     if (parse_compound_list(&(node->then_body), lexer) != PARSER_OK)
-        return PARSER_UNEXPECTED_TOKEN;
+        goto error;
 
     if (lexer_peek(lexer).type != TOKEN_DONE)
-        return PARSER_UNEXPECTED_TOKEN;
+        goto error;
     lexer_pop(lexer);
 
     *ast = (struct ast *)node;
     return PARSER_OK;
+
+    error:
+        free_ast((struct ast *)node);
+        return PARSER_UNEXPECTED_TOKEN;
 }
