@@ -5,6 +5,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../expansion/expansion.h"
+
+extern struct cache g_cache;
+
 enum input_status
 {
     INPUT_OK,

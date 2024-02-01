@@ -1,6 +1,9 @@
 #ifndef EXPANSION_H
 #define EXPANSION_H
 
+#include <sys/types.h>
+#include <unistd.h>
+
 #include "../ast/ast.h"
 #include "../utils/Dstring/dstring.h"
 
@@ -11,6 +14,13 @@ struct cache
     int argc; // number of given args
     char **argv; // list of given args
     struct dictionary *dictionary; // stored variables
+    int least_retval;
+};
+
+struct Dlist
+{
+	char **list;
+	size_t size;
 };
 
 // a linked listed used to store variables
@@ -28,7 +38,11 @@ extern struct cache g_cache; // the cache defined in main
 // simply initializes a dictionary structure
 struct dictionary *init_dictionary(char *name, char *value);
 
-char *expand(char *str);
+struct Dlist *Dlist_init(void);
+
+void Dlist_free(struct Dlist *list);
+
+void expand(struct Dlist *list, char *str);
 
 // add a variable in the dictionary
 #endif /* ! EXPANSION_H */

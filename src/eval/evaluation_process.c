@@ -43,12 +43,7 @@ int evaluate_ast_sequence(struct ast_sequence *node)
     int ret = 0;
     for (size_t i = 0; i < node->num_commands; i++)
     {
-        // int res =
         ret = evaluate_node(*(node->commands + i));
-        // if (res != builtin_true())
-        // {
-        // return res;
-        // }
     }
     return ret;
 }
@@ -146,12 +141,18 @@ static int is_reserved_word(char *s)
 int execute_command(struct ast_cmd *command_node)
 {
     struct ast_cmd *dupe = (struct ast_cmd *)command_node;
+    struct Dlist *list = Dlist_init();
     for (size_t i = 0; i < dupe->num_words; i++) // TODO
     {
         char *old_wd = dupe->words[i];
-        dupe->words[i] = expand(old_wd);
-        free(old_wd);
+        expand(list, old_wd);
+	free(old_wd);
     }
+    free(dupe->words);
+    dupe->words = list->list;
+    dupe->num_words = list->size;
+    free(list);
+
     if (strcmp(*command_node->words, "echo") == 0)
     {
         return builtin_echo(command_node->words + 1, command_node->num_words);
@@ -337,22 +338,3 @@ int evaluate_redirections(struct ast *node)
 {
     return eval_redirections(node);
 }
-
-// char **convert_children_to_argv(struct ast *node)
-// {
-//     char **argv = malloc((node->nbchildren + 2) * sizeof(char *));
-//     if (!argv)
-//     {
-//         perror("malloc failed");
-//         exit(EXIT_FAILURE);
-//     }
-//
-//     argv[0] = node->value; // Command name
-//     for (size_t i = 0; i < node->nbchildren; i++)
-//     {
-//         argv[i + 1] = node->children[i]->value;
-//     }
-//     argv[node->nbchildren + 1] = NULL; // Null-terminate the argv array
-//
-//     return argv;
-// }

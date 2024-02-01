@@ -33,7 +33,8 @@ struct ast_not *ast_not_init(void)
 
 struct ast_redirection *ast_redirection_init(enum token_type type)
 {
-    struct ast_redirection *new_redirection = calloc(1, sizeof(struct ast_redirection));
+    struct ast_redirection *new_redirection =
+        calloc(1, sizeof(struct ast_redirection));
     if (!new_redirection)
         return NULL;
     new_redirection->base.type = AST_REDIRECTION;
@@ -175,8 +176,10 @@ static void free_redirection(struct ast_redirection *redirection) {
     }
 }
 
-static void free_pipeline(struct ast_pipeline *pipeline) {
-    if (pipeline) {
+static void free_pipeline(struct ast_pipeline *pipeline)
+{
+    if (pipeline)
+    {
         free_ast(pipeline->left_cmd);
         free_ast(pipeline->right_cmd);
         free(pipeline);

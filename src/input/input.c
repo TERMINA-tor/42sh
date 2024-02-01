@@ -11,11 +11,10 @@ FILE *input_error(FILE *fd)
 
 FILE *get_input(int argc, char **argv)
 {
-    if (argc > 3)
-        return input_error(NULL);
-
     int found_file = 0;
     FILE *fd = fdopen(0, "r");
+    g_cache.argc--;
+    g_cache.argv++;
     for (int i = 1; i < argc; i++)
     {
         if (!strcmp(argv[i], "-c"))
@@ -45,7 +44,13 @@ FILE *get_input(int argc, char **argv)
                 return input_error(fd);
         }
         else
+	{
+	    if (found_file)
+		    break;
             return input_error(fd);
+	}
+	g_cache.argc--;
+	g_cache.argv++;
     }
     return fd;
 }

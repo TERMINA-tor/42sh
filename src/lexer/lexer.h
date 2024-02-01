@@ -52,6 +52,7 @@ struct lexer
     FILE *fd; // the file descriptor pointing to the input stream
     size_t offset; // how many characters have been read
     int in_command; // are we in a command ?
+    struct token *least; // least seen token
 };
 
 // lookuptable structure

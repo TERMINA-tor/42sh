@@ -1,0 +1,3 @@
+echo $PWD;
+echo ${PWD};
+echo {$PWD}

@@ -21,8 +21,7 @@ void print_args(char **argv, int interpret_escapes, size_t len);
 int builtin_echo(char **argv, size_t nbr_args)
 {
     int newline = 1; // By default, echo prints a newline at the end
-    int interpret_escapes =
-        1; // By default, do not interpret special characters
+    int interpret_escapes = 0; // By default, do not interpret special characters
 
     // Skip the command name
     size_t i = 1;

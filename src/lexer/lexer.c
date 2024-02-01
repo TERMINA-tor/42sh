@@ -19,6 +19,8 @@ void lexer_free(struct lexer *lexer)
 {
     if (lexer->fd)
         fclose(lexer->fd);
+    if (lexer->least)
+	    free(lexer->least);
     free(lexer);
 }
 
@@ -124,21 +126,45 @@ static enum token_type get_token_type(struct lexer *lexer, char *value)
     return TOKEN_WORD;
 }
 
+static int is_valid_variable(char c)
+{
+	int k = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || (c == '@') 
+		|| (c == '*') || (c == '#');
+	return k;
+}
+
 // handle the case of an unquoted ${}
 static int handle_dollar(struct lexer *lexer, struct Dstring *value)
 {
     char tmp = read_from_input(lexer);
-    if (tmp != '{')
+    int is_embeded = 0;
+    if (tmp == '{')
     {
-        push_output(tmp, lexer);
-        return 0;
+	Dstring_append(value, '{');
+	tmp = read_from_input(lexer);
+	is_embeded = 1; // only $name && ${name} will be tested
     }
-    while (tmp != EOF && tmp != '}')
+    while (tmp != EOF && is_valid_variable(tmp))
     {
         Dstring_append(value, tmp);
+	tmp = read_from_input(lexer);
     }
-    if (tmp == '}')
-        push_output('}', lexer);
+    
+    if (tmp != EOF && !is_valid_variable(tmp))
+    {
+	    if (tmp == '}')
+	    {
+		    if (is_embeded)
+		    {
+			    is_embeded = 0;
+			    Dstring_append(value, '}');
+		    }
+		    else
+			    push_output('}', lexer);
+	    }
+	    else
+		    push_output(tmp, lexer);
+    }
     return 1;
 }
 
@@ -247,8 +273,9 @@ static void get_next(struct lexer *lexer, struct Dstring *value)
         else if ((curr == '$') && (!is_quoted)) // rule_5
         {
             Dstring_append(value, curr);
-            if (handle_dollar(lexer, value))
-                break;
+            handle_dollar(lexer, value);
+	    //if (handle_dollar(lexer, value))
+              //  break;
         }
         else if ((!is_quoted) && is_operator(curr) && !is_delimitor(previous))
         {
@@ -316,21 +343,28 @@ struct token get_next_token(struct lexer *lexer)
 // the lexers offset
 struct token lexer_peek(struct lexer *lexer)
 {
-    size_t old_offset = lexer->offset;
-
-    struct token tok = get_next_token(lexer);
-    if (tok.type == TOKEN_WORD || tok.type == TOKEN_ASSIGNEMENT)
-        free(tok.value);
-
-    size_t offset = lexer->offset - old_offset;
-    fseek(lexer->fd, -offset, SEEK_CUR);
-    lexer->offset = old_offset;
-    return tok;
+	if (lexer->least)
+		return *(lexer->least);
+	struct token tok = get_next_token(lexer);
+	lexer->least = calloc(1, sizeof(struct token));
+	(lexer->least)->type = tok.type;
+	(lexer->least)->value = tok.value;
+	return *(lexer->least);
 }
 
 // returns the next available token saving the offset
 // this operation is not reversible
 struct token lexer_pop(struct lexer *lexer)
 {
-    return get_next_token(lexer);
+    struct token save;
+    if (lexer->least)
+	    save = *(lexer->least);
+    else
+    {
+	    lexer_peek(lexer);
+	    save = *(lexer->least);
+    }
+    free(lexer->least);
+    lexer->least = NULL;
+    return save;
 }
