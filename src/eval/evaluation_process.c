@@ -22,6 +22,7 @@ int eval_pipeline(struct ast *node);
 int execute_command_non_builtin(char *argv[], size_t num_words);
 int loop_depth = 0;
 int break_called = 0;
+int continue_called = 0;
 struct ast *first_root;
 
 int evaluate_ast(struct ast *node)
@@ -57,36 +58,32 @@ int evaluate_node(struct ast *node)
         return -1;
     }
 
+    int w;
     switch (node->type)
     {
     case AST_IF:
         return evaluate_if((struct ast_if *)node);
-        break;
     case AST_COMMAND:
         return execute_command((struct ast_cmd *)node);
-        break;
     case AST_UNTIL:
-        return execute_until((struct ast_loop *)node);
-        break;
+        w = execute_until((struct ast_loop *)node);
+        continue_called = 0;
+        return w;
     case AST_WHILE:
-        return execute_while((struct ast_loop *)node);
-        break;
+        w = execute_while((struct ast_loop *)node);
+        continue_called = 0;
+        return w;
     case AST_SEQUENCE:
         return evaluate_ast_sequence((struct ast_sequence *)node);
-        break;
     case AST_REDIRECTION:
         return evaluate_redirections(node);
-        break;
     case AST_PIPELINE:
         return eval_pipeline(node);
-        break;
     default:
         fprintf(stderr, "Unknown AST node type\n");
         return -1;
-        break;
     }
 }
-
 void clean_ast(void)
 {
     free_ast(first_root);
@@ -131,7 +128,7 @@ static int is_reserved_word(char *s)
                                      "elif", "fi",   "while", "until", "for",
                                      "do",   "done", "&&",    "||",    "|",
                                      ";",    "<",    ">",     ">>",    ">&",
-                                     "<&",   ">|", "<>" };
+                                     "<&",   ">|",   "<>" };
     size_t len = sizeof(reserved_words) / sizeof(char *);
     for (size_t i = 0; i < len; i++)
     {
@@ -140,8 +137,6 @@ static int is_reserved_word(char *s)
     }
     return 0;
 }
-
-void set_loop_break_flag();
 
 int execute_command(struct ast_cmd *command_node)
 {
@@ -166,11 +161,11 @@ int execute_command(struct ast_cmd *command_node)
     }
     else if (strcmp(*command_node->words, "continue") == 0)
     {
-        return builtin_continue(loop_depth);
+        return builtin_continue(command_node, loop_depth);
     }
     else if (strcmp(*command_node->words, "break") == 0)
     {
-        return builtin_break(loop_depth);
+        return builtin_break(command_node, loop_depth);
     }
     else if (strcmp(*command_node->words, "exit") == 0)
     {
@@ -210,9 +205,28 @@ int execute_command(struct ast_cmd *command_node)
     }
 }
 
-void set_loop_break_flag()
+void set_loop_break_flag(int i)
 {
-    break_called = 1;
+    if (i == 0)
+    {
+        break_called++;
+    }
+    else
+    {
+        break_called += i;
+    }
+}
+
+void set_loop_continue_flag(int i)
+{
+    if (i == 0)
+    {
+        continue_called++;
+    }
+    else
+    {
+        continue_called += i;
+    }
 }
 
 int execute_command_non_builtin(char *argv[], size_t num_words)
@@ -276,12 +290,20 @@ int execute_until(struct ast_loop *until_node)
 {
     loop_depth++;
     while (!evaluate_node(until_node->condition) && loop_depth > 0
-           && !break_called)
+           && break_called == 0)
     {
+        if (continue_called != 0)
+        {
+            continue_called--;
+            continue;
+        }
         evaluate_node(until_node->then_body);
     }
     loop_depth--;
-    break_called = 0;
+    if (break_called > 0)
+    {
+        break_called--;
+    }
     return builtin_true();
 }
 
@@ -289,12 +311,20 @@ int execute_while(struct ast_loop *while_node)
 {
     loop_depth++;
     while (evaluate_node(while_node->condition) && loop_depth > 0
-           && !break_called)
+           && break_called == 0)
     {
+        if (continue_called != 0)
+        {
+            continue_called--;
+            continue;
+        }
         evaluate_node(while_node->then_body);
     }
     loop_depth--;
-    break_called = 0;
+    if (break_called > 0)
+    {
+        break_called--;
+    }
     return builtin_true();
 }
 
