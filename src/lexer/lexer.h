@@ -34,7 +34,8 @@ enum token_type
     TOKEN_AMPREDIR_OUTPUT,
     TOKEN_AMPREDIR_INPUT,
     TOKEN_FORCE_OUTPUT_REDIR,
-    TOKEN_ERROR
+    TOKEN_ERROR,
+    TOKEN_REDIRECT_INPUT_OUTPUT
 };
 
 // structure representing a keyword in an input

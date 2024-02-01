@@ -260,4 +260,3 @@ def test_uid():
 def test_IFS():
     file_path = path_expansion + "test_IFS.sh"
     return compare(run_ref(file_path), run_cmd(file_path))
-

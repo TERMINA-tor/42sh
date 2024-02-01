@@ -6,6 +6,9 @@ static int eval_append_output(struct ast_redirection *redirection);
 static int eval_ampredir_output(struct ast_redirection *redirection);
 static int eval_ampredir_input(struct ast_redirection *redirection);
 static int eval_force_output_redir(struct ast_redirection *redirection);
+static int eval_redir_input_output(struct ast_redirection *redirection);
+
+int execute_command(struct ast_cmd *command_node);
 
 int eval_redirections(struct ast *node)
 {
@@ -31,6 +34,9 @@ int eval_redirections(struct ast *node)
     case TOKEN_FORCE_OUTPUT_REDIR:
         ret = eval_force_output_redir(redirection);
         break;
+    case TOKEN_REDIRECT_INPUT_OUTPUT:
+        ret = eval_redir_input_output(redirection);
+        break;
     default:
         break;
     }
@@ -53,7 +59,7 @@ static int eval_redir_input(struct ast_redirection *redirection)
         perror("dup2");
         return 1;
     }
-    ret = evaluate_node(redirection->command);
+    ret = execute_command((struct ast_cmd *)redirection->command);
     if (close(fd) == -1)
     {
         perror("close");
@@ -78,7 +84,7 @@ static int eval_redir_output(struct ast_redirection *redirection)
         perror("dup2");
         return 1;
     }
-    ret = evaluate_node(redirection->command);
+    ret = execute_command((struct ast_cmd *)redirection->command);
     if (close(fd) == -1)
     {
         perror("close");
@@ -103,7 +109,7 @@ static int eval_append_output(struct ast_redirection *redirection)
         perror("dup2");
         return 1;
     }
-    ret = evaluate_node(redirection->command);
+    ret = execute_command((struct ast_cmd *)redirection->command);
     if (close(fd) == -1)
     {
         perror("close");
@@ -134,13 +140,13 @@ static int eval_ampredir_output(struct ast_redirection *redirection)
         perror("dup2");
         return 1;
     }
-    ret = evaluate_node(redirection->command);
+    ret = execute_command((struct ast_cmd *)redirection->command);
     if (close(fd) == -1)
     {
         perror("close");
         return 1;
     }
-    return 0;
+    return ret;
 }
 
 static int eval_ampredir_input(struct ast_redirection *redirection)
@@ -165,13 +171,13 @@ static int eval_ampredir_input(struct ast_redirection *redirection)
         perror("dup2");
         return 1;
     }
-    ret = evaluate_node(redirection->command);
+    ret = execute_command((struct ast_cmd *)redirection->command);
     if (close(fd) == -1)
     {
         perror("close");
         return 1;
     }
-    return 0;
+    return ret;
 }
 
 static int eval_force_output_redir(struct ast_redirection *redirection)
@@ -196,11 +202,42 @@ static int eval_force_output_redir(struct ast_redirection *redirection)
         perror("dup2");
         return 1;
     }
-    ret = evaluate_node(redirection->command);
+    ret = execute_command((struct ast_cmd *)redirection->command);
     if (close(fd) == -1)
     {
         perror("close");
         return 1;
     }
     return 0;
+}
+
+static int eval_redir_input_output(struct ast_redirection *redirection)
+{
+    int fd;
+    int ret = 0;
+    fd = open(redirection->filename, O_RDWR | O_CREAT | O_TRUNC, 0644);
+    if (fd == -1)
+    {
+        perror("open");
+        return 1;
+    }
+    ret = dup2(fd, 0);
+    if (ret == -1)
+    {
+        perror("dup2");
+        return 1;
+    }
+    ret = dup2(fd, 1);
+    if (ret == -1)
+    {
+        perror("dup2");
+        return 1;
+    }
+    ret = execute_command((struct ast_cmd *)redirection->command);
+    if (close(fd) == -1)
+    {
+        perror("close");
+        return 1;
+    }
+    return ret;
 }

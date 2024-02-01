@@ -37,7 +37,7 @@ int main(int argc, char **argv)
         enum parser_status status = parse_input(&res, lexer);
         if (status == PARSER_UNEXPECTED_TOKEN)
             goto error_2;
-        retval = evaluate_node(res);
+        retval = evaluate_ast(res);
 	if (res)
         {
             free_ast(res);

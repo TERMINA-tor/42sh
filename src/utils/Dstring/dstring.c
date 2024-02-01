@@ -20,6 +20,12 @@ void Dstring_append(struct Dstring *str, char c)
     str->size++;
 }
 
+void Dstring_concat_string(struct Dstring *str, struct Dstring* str2)
+{
+    for (size_t i = 0; i < str2->size; i++)
+        Dstring_append(str, str2->value[i]);
+}
+
 void Dstring_free(struct Dstring *str)
 {
     free(str->value);

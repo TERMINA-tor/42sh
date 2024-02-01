@@ -3,13 +3,29 @@
 
 #include <stdio.h>
 
-// The 'true' built-in function
+#include "../ast/ast.h"
+#include "../utils/Dstring/dstring.h"
+
+// each of the following are built-in functions
+
 int builtin_true(void);
 
-// The 'false' built-in function
 int builtin_false(void);
 
-// The 'echo' built-in function
 int builtin_echo(char **argv, size_t nbr_args);
+
+int builtin_exit(struct ast_cmd *cmd);
+
+int builtin_cd(char **args, int nb_args);
+
+int builtin_export(struct ast_cmd *cmd);
+
+// int builtin_dot(struct ast_cmd *cmd);
+
+int builtin_unset(struct ast_cmd *cmd);
+
+int builtin_continue(struct ast_cmd *cmd, int inside_loop);
+
+int builtin_break(struct ast_cmd *cmd, int inside_loop);
 
 #endif // BUILTINS_H
