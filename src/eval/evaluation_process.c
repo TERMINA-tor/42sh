@@ -181,7 +181,7 @@ int execute_command(struct ast_cmd *command_node)
     }
     else if (strcmp(*command_node->words, "cd") == 0)
     {
-        return builtin_cd(command_node->words, command_node->num_words);
+        return builtin_cd(command_node->words, command_node->num_words - 1);
     }
     else
     {

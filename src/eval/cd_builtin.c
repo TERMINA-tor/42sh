@@ -4,7 +4,9 @@
 #include <string.h>
 #include <unistd.h>
 
-void canonicalize_path(struct Dstring **curpath)
+#include "builtins.h"
+
+static void canonicalize_path(struct Dstring **curpath)
 {
     struct Dstring *temp_path =
         Dstring_new(); // Copie temporaire du chemin à traiter
@@ -62,7 +64,7 @@ void canonicalize_path(struct Dstring **curpath)
     Dstring_free(temp_path);
 }
 
-void option_cdpath(struct Dstring **curpath, char *input)
+static void option_cdpath(struct Dstring **curpath, char *input)
 {
     char *cdpath =
         getenv("CDPATH"); // Chercher dans CDPATH si le chemin est relatif
@@ -100,7 +102,7 @@ void option_cdpath(struct Dstring **curpath, char *input)
         Dstring_concat(*curpath, input);
 }
 
-void build_with_pwd(struct Dstring **curpath)
+static void build_with_pwd(struct Dstring **curpath)
 {
     struct Dstring *final = Dstring_new();
     char *pwd = getenv("PWD");
@@ -115,7 +117,7 @@ void build_with_pwd(struct Dstring **curpath)
     }
 }
 
-int path(struct Dstring **curpath, char *args[], int nb_args)
+static int path(struct Dstring **curpath, char *args[], int nb_args)
 {
     // Si aucun répertoire n'est spécifié, ou si HOME n'est pas défini
     if (nb_args == 0)
