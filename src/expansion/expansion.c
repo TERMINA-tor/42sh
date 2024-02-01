@@ -89,10 +89,34 @@ static void search_dictionary(struct Dlist *list, struct Dstring *arg, struct Ds
 	dst->size = 0;
 }
 
+int get_nth(struct Dstring *dst, char *arg, int in_brackets)
+{
+	if (!arg)
+		return 0;
+	int index = 0;
+	if (in_brackets)
+	{
+		for (size_t i = 0; arg[i]; i++)
+		{
+			index *= 10;
+			index += arg[i] - '0';
+		}
+	}
+	else
+		index = *arg - '0';
+
+	if (index && index <= g_cache.argc) // $0 is forbidden
+	{
+		Dstring_concat(dst, g_cache.argv[index - 1]);
+		return 1;
+	}
+	return 0;
+}
+
 // try to find static variabled (not environment variables)
 // if the variable is not $@, the value is appended to dst
 // at the end of the dunction dsts value is added to list
-static void search_cache(struct Dstring *arg, struct Dlist *list, struct Dstring *dst)
+static void search_cache(struct Dstring *arg, struct Dlist *list, struct Dstring *dst, int in_brackets)
 {
 	if (!strcmp(arg->value, "*"))
 	{
@@ -140,7 +164,10 @@ static void search_cache(struct Dstring *arg, struct Dlist *list, struct Dstring
 		append_int(dst, getuid());
 	}
 	else
-		search_dictionary(list, arg, dst);
+	{
+		if (!get_nth(dst, arg->value, in_brackets))
+			search_dictionary(list, arg, dst);
+	}
 	//Dlist_append(list, dst->value);
 }
 
@@ -179,7 +206,7 @@ static size_t handle_dollar(struct Dlist *list, char *src, struct Dstring *dst)
     if (tmp)
     	Dstring_concat(dst, tmp);
     else
-	search_cache(parameter, list, dst);
+	search_cache(parameter, list, dst, *dupe == '}');
 
     Dstring_free(parameter);
     if (is_embeded)

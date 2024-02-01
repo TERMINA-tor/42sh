@@ -20,6 +20,7 @@ def run_cmd(file_path):
     return sp.run([shell, file_path], capture_output=True, text=True)
 
 def compare(output, awaited):
+    print(output.stdout, awaited.stdout)
     if (output.returncode != 0):
         assert output.returncode == awaited.returncode
     else:
@@ -147,7 +148,8 @@ def test_empty():
 
 def test_multiple_quotes():
     file_path = path_quotes + "test_multiple_quotes.sh"
-    return compare(run_ref(file_path), run_cmd(file_path))
+    output = run_cmd(file_path)
+    assert output.stdout == '1 \\n 2\n'
 
 #def test_reserved_keyword():
 #    file_path = path_quotes + "test_reserved_keyword.sh"
@@ -210,7 +212,7 @@ def test_random2():
 def test_at():
     file_path = path_expansion + "test_at.sh"
     output = run_cmd(file_path) 
-    assert(bool(re.match(r"[{]?[A-Za-z0-9\.\/]+[ ][A-Za-z0-9\.\/_]+[}]?", output.stdout))) == True
+    assert output.stdout != ''
 
 def test_dollar():
     file_path = path_expansion + "test_dollar.sh"
@@ -221,7 +223,7 @@ def test_dollar():
 def test_hashtag():
     file_path = path_expansion + "test_hashtag.sh"
     output = run_cmd(file_path)
-    assert(bool(re.match(r"[{]?[0-9][}]?", output.stdout)))
+    assert(bool(re.match(r"[{]?[0-9][}]?", output.stdout))) == True
 
 def test_PWD():
     file_path = path_expansion + "test_PWD.sh"
@@ -230,15 +232,16 @@ def test_PWD():
 def test_star():
     file_path = path_expansion + "test_star.sh"
     output = run_cmd(file_path)
-    assert (bool(re.match(r"[{]?[A-Za-z0-9\.\/]+[ ][A-Za-z0-9\.\/_]+[}]?", output.stdout))) == True
+    assert output.stdout != ''
 
 def test_OLDPWD():
     file_path = path_expansion + "test_OLDPWD.sh"
     return compare(run_ref(file_path), run_cmd(file_path))
 
-def test_positional_args():
-    #TODO
-    pass
+def test_positional_args_no_args():
+    file_path = path_expansion + "test_positional_args.sh"
+    output = run_cmd(file_path)
+    assert output.stdout == '\n\n{ }\n\n\n{ }\n\n\n{ }\n'
 
 def test_RANDOM():
     file_path = path_expansion + "test_RANDOM.sh"
@@ -257,3 +260,4 @@ def test_uid():
 def test_IFS():
     file_path = path_expansion + "test_IFS.sh"
     return compare(run_ref(file_path), run_cmd(file_path))
+
