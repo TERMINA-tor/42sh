@@ -10,7 +10,7 @@ int eval_pipeline(struct ast *node)
 
     if (pipe(pipefd) == -1)
     {
-        perror("pipe");
+        fprintf(stderr, "pipe failed\n");
         return -1;
     }
 
@@ -24,7 +24,7 @@ int eval_pipeline(struct ast *node)
     }
     else if (pid < 0)
     {
-        perror("fork");
+        fprintf(stderr, "fork failed\n");
         return -1;
     }
 
@@ -38,7 +38,7 @@ int eval_pipeline(struct ast *node)
     }
     else if (pid < 0)
     {
-        perror("fork");
+        fprintf(stderr, "fork failed\n");
         return -1;
     }
 
