@@ -19,6 +19,8 @@ void lexer_free(struct lexer *lexer)
 {
     if (lexer->fd)
         fclose(lexer->fd);
+    if (lexer->least)
+	    free(lexer->least);
     free(lexer);
 }
 
@@ -334,21 +336,28 @@ struct token get_next_token(struct lexer *lexer)
 // the lexers offset
 struct token lexer_peek(struct lexer *lexer)
 {
-    size_t old_offset = lexer->offset;
-
-    struct token tok = get_next_token(lexer);
-    if (tok.type == TOKEN_WORD || tok.type == TOKEN_ASSIGNEMENT)
-        free(tok.value);
-
-    size_t offset = lexer->offset - old_offset;
-    fseek(lexer->fd, -offset, SEEK_CUR);
-    lexer->offset = old_offset;
-    return tok;
+	if (lexer->least)
+		return *(lexer->least);
+	struct token tok = get_next_token(lexer);
+	lexer->least = calloc(1, sizeof(struct token));
+	(lexer->least)->type = tok.type;
+	(lexer->least)->value = tok.value;
+	return *(lexer->least);
 }
 
 // returns the next available token saving the offset
 // this operation is not reversible
 struct token lexer_pop(struct lexer *lexer)
 {
-    return get_next_token(lexer);
+    struct token save;
+    if (lexer->least)
+	    save = *(lexer->least);
+    else
+    {
+	    lexer_peek(lexer);
+	    save = *(lexer->least);
+    }
+    free(lexer->least);
+    lexer->least = NULL;
+    return save;
 }
