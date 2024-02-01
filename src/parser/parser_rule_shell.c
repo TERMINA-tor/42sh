@@ -9,16 +9,24 @@
 enum parser_status parse_shell_command(struct ast **ast, struct lexer *lexer)
 {
     struct token next = lexer_peek(lexer);
+    enum parser_status status = PARSER_OK;
     if (next.type == TOKEN_IF)
-        return parse_if(ast, lexer);
+        status = parse_if(ast, lexer);
     else if (next.type == TOKEN_WHILE)
-        return parse_while(ast, lexer);
+        status = parse_while(ast, lexer);
     else if (next.type == TOKEN_UNTIL)
-        return parse_until(ast, lexer);
+        status = parse_until(ast, lexer);
     // else if (next.type == TOKEN_FOR)
     //     return parse_for(ast, lexer);
     else
         return PARSER_UNEXPECTED_TOKEN;
+
+    if (status != PARSER_OK)
+    {
+        free_ast(*ast);
+        return status;
+    }
+    return PARSER_OK;
 }
 
 enum parser_status parse_if(struct ast **ast, struct lexer *lexer)
