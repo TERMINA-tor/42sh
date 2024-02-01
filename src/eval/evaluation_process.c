@@ -138,9 +138,6 @@ static int is_reserved_word(char *s)
     return 0;
 }
 
-void set_loop_break_flag();
-void set_loop_continue_flag();
-
 int execute_command(struct ast_cmd *command_node)
 {
     struct ast_cmd *dupe = (struct ast_cmd *)command_node;
@@ -174,10 +171,6 @@ int execute_command(struct ast_cmd *command_node)
     {
         return builtin_exit(command_node);
     }
-    else if (strcmp(*command_node->words, "cd") == 0)
-    {
-        return builtin_cd(command_node);
-    }
     else if (strcmp(*command_node->words, "export") == 0)
     {
         return builtin_export(command_node);
@@ -208,14 +201,28 @@ int execute_command(struct ast_cmd *command_node)
     }
 }
 
-void set_loop_break_flag()
+void set_loop_break_flag(int i)
 {
-    break_called++;
+    if (i == 0)
+    {
+        break_called++;
+    }
+    else
+    {
+        break_called += i;
+    }
 }
 
-void set_loop_continue_flag()
+void set_loop_continue_flag(int i)
 {
-    continue_called++;
+    if (i == 0)
+    {
+        continue_called++;
+    }
+    else
+    {
+        continue_called += i;
+    }
 }
 
 int execute_command_non_builtin(char *argv[], size_t num_words)
