@@ -58,17 +58,21 @@ enum parser_status parse_list(struct ast **ast, struct lexer *lexer)
     return PARSER_OK;
 }
 
-// pipeline = command { '|' {'\n'} command } ;
+// pipeline = ['!'] command { '|' {'\n'} command } ;
 
 enum parser_status parse_pipeline(struct ast **ast, struct lexer *lexer)
 {
-    if (parse_command(ast, lexer) != PARSER_OK)
+    struct ast *left_cmd = NULL;
+    if (lexer_peek(lexer).type == TOKEN_NOT)
+        lexer_pop(lexer);
+    if (parse_command(&left_cmd, lexer) != PARSER_OK)
         return PARSER_UNEXPECTED_TOKEN;
+        
     while (lexer_peek(lexer).type == TOKEN_PIPE)
     {
         lexer_pop(lexer);
         struct ast_pipeline *pipeline = ast_pipeline_init();
-        pipeline->left_cmd = *ast;
+        pipeline->left_cmd = left_cmd;
         while (lexer_peek(lexer).type == TOKEN_EOL)
         {
             lexer_pop(lexer);
@@ -78,8 +82,9 @@ enum parser_status parse_pipeline(struct ast **ast, struct lexer *lexer)
             free_ast((struct ast *)pipeline);
             return PARSER_UNEXPECTED_TOKEN;
         }
-        *ast = (struct ast *)pipeline;
+        left_cmd = (struct ast *)pipeline;
     }
+    *ast = left_cmd;
     return PARSER_OK;
 }
 

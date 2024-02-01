@@ -93,6 +93,7 @@ static enum token_type get_token_type(struct lexer *lexer, char *value)
                                          { TOKEN_THEN, "then" },
                                          { TOKEN_ELIF, "elif" },
                                          { TOKEN_FI, "fi" },
+                                         { TOKEN_NOT, "!" },
                                          { TOKEN_WHILE, "while" },
                                          { TOKEN_UNTIL, "until" },
                                          { TOKEN_FOR, "for" },
@@ -300,6 +301,11 @@ struct token get_next_token(struct lexer *lexer)
 
     if (new_token.type == TOKEN_SEMICOLON || new_token.type == TOKEN_EOL)
         lexer->in_command = 0;
+    if (new_token.value[0] == '!' && !lexer->in_command)
+    {
+        free(new_token.value);
+        new_token.type = TOKEN_NOT;
+    }
     else if (new_token.type == TOKEN_WORD)
         lexer->in_command = 1;
 

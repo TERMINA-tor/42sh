@@ -22,6 +22,15 @@ struct ast_pipeline *ast_pipeline_init(void)
     return new_pipeline;
 }
 
+struct ast_not *ast_not_init(void)
+{
+    struct ast_not *new_not = calloc(1, sizeof(struct ast_not));
+    if (!new_not)
+        return NULL;
+    new_not->base.type = AST_NOT;
+    return new_not;
+}
+
 struct ast_redirection *ast_redirection_init(enum token_type type)
 {
     struct ast_redirection *new_redirection = calloc(1, sizeof(struct ast_redirection));
@@ -29,6 +38,9 @@ struct ast_redirection *ast_redirection_init(enum token_type type)
         return NULL;
     new_redirection->base.type = AST_REDIRECTION;
     new_redirection->type = type;
+    new_redirection->filenames = NULL;
+    new_redirection->num_filenames = 0;
+    new_redirection->command = NULL;
     return new_redirection;
 }
 
@@ -154,8 +166,11 @@ static void free_loop(struct ast_loop *loop_node)
 
 static void free_redirection(struct ast_redirection *redirection) {
     if (redirection) {
-        free_cmd(redirection->command);
-        free(redirection->filename);
+        free_ast((struct ast *)redirection->command);
+        for (int i = 0; i < redirection->num_filenames; i++) {
+            free(redirection->filenames[i]);
+        }
+        free(redirection->filenames);
         free(redirection);
     }
 }
@@ -165,6 +180,15 @@ static void free_pipeline(struct ast_pipeline *pipeline) {
         free_ast(pipeline->left_cmd);
         free_ast(pipeline->right_cmd);
         free(pipeline);
+    }
+}
+
+static void free_not(struct ast_not *not_node)
+{
+    if (not_node)
+    {
+        free_ast(not_node->command);
+        free(not_node);
     }
 }
 
@@ -197,6 +221,9 @@ void free_ast(struct ast *node)
             break;
         case AST_PIPELINE:
             free_pipeline((struct ast_pipeline *)node);
+            break;
+        case AST_NOT:
+            free_not((struct ast_not *)node);
             break;
 
             // Ajoutez des cas pour d'autres types d'AST au besoin

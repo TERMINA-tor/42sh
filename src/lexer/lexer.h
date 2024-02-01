@@ -15,6 +15,7 @@ enum token_type
     TOKEN_ELIF,
     TOKEN_THEN,
     TOKEN_FI,
+    TOKEN_NOT,
     TOKEN_WHILE,
     TOKEN_UNTIL,
     TOKEN_FOR,
