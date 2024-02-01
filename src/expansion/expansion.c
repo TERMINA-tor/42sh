@@ -98,19 +98,22 @@ int get_nth(struct Dstring *dst, char *arg, int in_brackets)
 	{
 		for (size_t i = 0; arg[i]; i++)
 		{
+			if (arg[i] < '0' || arg[i] > '9')
+				return 0;
 			index *= 10;
 			index += arg[i] - '0';
 		}
 	}
 	else
+	{
+		if (*arg > '9' || *arg < '0')
+			return 0;
 		index = *arg - '0';
+	}
 
 	if (index && index <= g_cache.argc) // $0 is forbidden
-	{
 		Dstring_concat(dst, g_cache.argv[index - 1]);
-		return 1;
-	}
-	return 0;
+	return 1;
 }
 
 // try to find static variabled (not environment variables)
@@ -200,6 +203,8 @@ static size_t handle_dollar(struct Dlist *list, char *src, struct Dstring *dst)
 	    else
 		    dupe--;
     }
+    else if (*dupe == '$')
+	    dupe--;
     
     Dstring_append(parameter, 0);
     char *tmp = getenv(parameter->value);

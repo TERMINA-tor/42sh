@@ -241,7 +241,7 @@ def test_OLDPWD():
 def test_positional_args_no_args():
     file_path = path_expansion + "test_positional_args.sh"
     output = run_cmd(file_path)
-    assert output.stdout == '\n\n{ }\n\n\n{ }\n\n\n{ }\n'
+    assert output.stdout == '\n\n{}\n\n\n{}\n\n\n{}\n'
 
 def test_RANDOM():
     file_path = path_expansion + "test_RANDOM.sh"
