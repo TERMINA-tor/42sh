@@ -5,6 +5,7 @@
 
 int evaluate_node(struct ast *node);
 void set_loop_break_flag();
+void set_loop_continue_flag();
 void clean_ast();
 
 #endif // EVALUATION_PROCESS_H
