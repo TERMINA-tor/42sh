@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <limits.h>
 #include "dstring.h"
 
 void canonicalize_path(struct Dstring **curpath) {
@@ -26,11 +25,19 @@ void canonicalize_path(struct Dstring **curpath) {
             }
         }
         else
+        {
+            if (component_count >= index_limit){
+                index_limit += 100;
+                canonical_components = realloc(canonical_components, index_limit * sizeof(char *));
+            }
             canonical_components[component_count++] = strdup(token);    // Stocke les autres composants
+        }
         token = strtok(NULL, "/");
     }
     Dstring_free(*curpath);   // Reconstruit le chemin canonique
     struct Dstring *final = Dstring_new();
+    if (component_count == 0)
+        Dstring_concat(final, "/");
     for (int i = 0; i < component_count; ++i) {
         Dstring_concat(final, "/");
         Dstring_concat(final, canonical_components[i]);
@@ -86,7 +93,7 @@ void build_with_pwd(struct Dstring **curpath){
     } 
 }
 
-int path(struct Dstring **curpath, char *args[], size_t nb_args){
+int path(struct Dstring **curpath, char *args[], int nb_args){
     // Si aucun répertoire n'est spécifié, ou si HOME n'est pas défini
     if (nb_args == 0) {
         char *home = getenv("HOME");
@@ -128,12 +135,12 @@ int path(struct Dstring **curpath, char *args[], size_t nb_args){
     return 0;
 }
 
-int builtin_cd(char **argv, int nbr_args) {
-    if (nbr_args > 2) // si trop d'argument
+int builtin_cd(char **args, int nb_args) {
+    if (nb_args > 2) // si trop d'argument
         return 1;
 
     struct Dstring *curpath = Dstring_new();
-    int result = path(&curpath, args, nbr_args);
+    int result = path(&curpath, args, nb_args);
     if (result == 1)
         return 1;
     else if (result == 2)
@@ -148,7 +155,7 @@ int builtin_cd(char **argv, int nbr_args) {
     if (chdir(curpath->value) != 0) { // Définir PWD
         perror("cd");
         Dstring_free(curpath);
-        return 1;
+        return 2;
     } else {
         setenv("PWD", curpath->value, 1); // Mettre à jour OLDPWD
         const char *oldpwd = getenv("PWD");
@@ -158,12 +165,5 @@ int builtin_cd(char **argv, int nbr_args) {
     }
 
     Dstring_free(curpath);
-    return 0;
-}
-
-int main(int argc, char *argv[]) {
-    // Utilisation de la fonction builtin_cd avec un exemple
-    builtin_cd(argv, argc - 1);
-
     return 0;
 }
