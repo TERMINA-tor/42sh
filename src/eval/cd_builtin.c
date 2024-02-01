@@ -196,16 +196,14 @@ int builtin_cd(char **args, int nb_args)
     { // Définir PWD
         perror("cd");
         Dstring_free(curpath);
-        return 2;
+        return 1;
     }
     else
     {
         setenv("PWD", curpath->value, 1); // Mettre à jour OLDPWD
         const char *oldpwd = getenv("PWD");
         if (oldpwd != NULL)
-        {
             setenv("OLDPWD", oldpwd, 1);
-        }
     }
 
     Dstring_free(curpath);
