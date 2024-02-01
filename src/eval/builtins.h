@@ -16,7 +16,7 @@ int builtin_echo(char **argv, size_t nbr_args);
 
 int builtin_exit(struct ast_cmd *cmd);
 
-int builtin_cd(char **argv, int nbr_args);
+int builtin_cd(char **args, int nb_args);
 
 int builtin_export(struct ast_cmd *cmd);
 

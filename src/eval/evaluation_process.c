@@ -184,6 +184,10 @@ int execute_command(struct ast_cmd *command_node)
     {
         return builtin_unset(command_node);
     }
+    else if (strcmp(*command_node->words, "cd") == 0)
+    {
+        return builtin_cd(command_node->words, command_node->num_words);
+    }
     else
     {
         if (command_node->num_words && is_reserved_word(command_node->words[0]))

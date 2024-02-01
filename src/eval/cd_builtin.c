@@ -4,8 +4,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "dstring.h"
-
 void canonicalize_path(struct Dstring **curpath)
 {
     struct Dstring *temp_path =
@@ -13,7 +11,6 @@ void canonicalize_path(struct Dstring **curpath)
     Dstring_concat_string(temp_path, *curpath);
     char **canonical_components = (char **)malloc(
         100 * sizeof(char *)); // Tableau dynamique pour stocker les composants
-                               // du chemin canonique
     int index_limit = 100;
     int component_count = 0;
     char *token = strtok(temp_path->value, "/"); // Tokenize le chemin par '/'
@@ -62,7 +59,6 @@ void canonicalize_path(struct Dstring **curpath)
     for (int i = 0; i < component_count; ++i)
         free(canonical_components[i]);
     free(canonical_components); // Libère la mémoire utilisée pour la copie
-                                // temporaire
     Dstring_free(temp_path);
 }
 
