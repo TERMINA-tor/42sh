@@ -264,10 +264,10 @@ static void get_next(struct lexer *lexer, struct Dstring *value)
             if (tmp != '\n' && (!is_quoted))
             {
                 Dstring_append(value, curr);
-                push_output(tmp, lexer); // \\n = line continuation
+                Dstring_append(value, tmp);
             }
         }
-        else if ((curr == '\'' || curr == '\"') && !is_delimitor(previous))
+        else if ((curr == '\'' || curr == '\"'))
         {
             least_quote = handle_quotes(&is_quoted, least_quote, curr);
             Dstring_append(value, curr);
