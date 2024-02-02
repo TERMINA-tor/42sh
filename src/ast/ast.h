@@ -93,4 +93,4 @@ struct ast *ast_cmd_word_add(
                  // found init a command node and add the word to the list
 void free_ast(struct ast *node); // free all the ast
 
-#endif
+#endif /* ! AST_H */

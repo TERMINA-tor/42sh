@@ -1,5 +1,5 @@
-#ifndef Dstring_h
-#define Dstring_h
+#ifndef DSTRING_H
+#define DSTRING_H
 
 #include <stdlib.h>
 
@@ -16,4 +16,4 @@ void Dstring_append(struct Dstring *str, char c);
 void Dstring_concat_string(struct Dstring *str, struct Dstring *str2);
 void Dstring_free(struct Dstring *str);
 
-#endif /* ! Dstring_h */
+#endif /* ! DSTRING_H */
