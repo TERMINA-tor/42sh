@@ -13,7 +13,7 @@
 
 static int evaluate_node(struct ast *node);
 static int execute_command(struct ast_cmd *command_node);
-static char **convert_children_to_argv(struct ast *node);
+// static char **convert_children_to_argv(struct ast *node);
 static int evaluate_if(struct ast_if *if_node);
 static int execute_until(struct ast_loop *until_node);
 static int execute_while(struct ast_loop *until_node);
@@ -29,13 +29,7 @@ static struct ast *first_root;
 int evaluate_ast(struct ast *node)
 {
     first_root = node;
-    int res = evaluate_node(node);
-    if (res != builtin_true())
-    {
-        return res;
-    }
-
-    return builtin_true();
+    return evaluate_node(node);
 }
 
 int evaluate_ast_sequence(struct ast_sequence *node)
