@@ -12,7 +12,7 @@
 #include "eval_redirections.h"
 
 static int evaluate_node(struct ast *node);
-static int execute_command(struct ast_cmd *command_node);
+int execute_command(struct ast_cmd *command_node);
 // static char **convert_children_to_argv(struct ast *node);
 static int evaluate_if(struct ast_if *if_node);
 static int execute_until(struct ast_loop *until_node);
