@@ -288,8 +288,12 @@ int execute_command_non_builtin(char *argv[], size_t num_words)
 
 int execute_until(struct ast_loop *until_node)
 {
+    if (until_node->condition == NULL)
+    {
+        return 2;
+    }
     loop_depth++;
-    while (!evaluate_node(until_node->condition) && loop_depth > 0
+    while (evaluate_node(until_node->condition) && loop_depth > 0
            && break_called == 0)
     {
         if (continue_called != 0)
@@ -309,8 +313,12 @@ int execute_until(struct ast_loop *until_node)
 
 int execute_while(struct ast_loop *while_node)
 {
+    if (while_node->condition == NULL)
+    {
+        return 2;
+    }
     loop_depth++;
-    while (evaluate_node(while_node->condition) && loop_depth > 0
+    while (!evaluate_node(while_node->condition) && loop_depth > 0
            && break_called == 0)
     {
         if (continue_called != 0)

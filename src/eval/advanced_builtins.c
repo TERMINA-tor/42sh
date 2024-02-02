@@ -77,7 +77,7 @@ int builtin_continue(struct ast_cmd *cmd, int inside_loop)
         return 1;
     }
     int i = 0;
-    if (cmd->num_words == 1)
+    if (cmd->num_words == 2)
     {
         i = string_to_int(cmd->words[1]);
     }
@@ -100,7 +100,7 @@ int builtin_break(struct ast_cmd *cmd, int inside_loop)
         return 1;
     }
     int i = 0;
-    if (cmd->num_words == 1)
+    if (cmd->num_words == 2)
     {
         i = string_to_int(cmd->words[1]);
     }
