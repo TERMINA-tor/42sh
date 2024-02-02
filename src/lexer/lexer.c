@@ -330,9 +330,10 @@ struct token get_next_token(struct lexer *lexer)
 
     if (new_token.type == TOKEN_SEMICOLON || new_token.type == TOKEN_EOL)
         lexer->in_command = 0;
-    if (new_token.value[0] == '!' && !lexer->in_command)
+    if (new_token.value && new_token.value[0] == '!' && !lexer->in_command)
     {
         free(new_token.value);
+        new_token.value = NULL;
         new_token.type = TOKEN_NOT;
     }
     else if (new_token.type == TOKEN_WORD)
