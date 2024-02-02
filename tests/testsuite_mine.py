@@ -52,3 +52,19 @@ def test_cd_noexist():
 def test_cd_noexist_with_path():
     file_path = path_cd + "test_cd_noexist_with_path.sh"
     return compare(run_ref(file_path), run_cmd(file_path))
+
+def test_cd_dif_dir():
+    file_path = path_cd + "test_cd_dif_dir.sh"
+    return compare(run_ref(file_path), run_cmd(file_path))
+
+def test_cd_one_dir():
+    file_path = path_cd + "test_cd_one_dir.sh"
+    return compare(run_ref(file_path), run_cmd(file_path))
+
+def test_cd_subdir():
+    file_path = path_cd + "test_cd_subdir.sh"
+    return compare(run_ref(file_path), run_cmd(file_path))
+
+def test_cd_subsubdir():
+    file_path = path_cd + "test_cd_subsubdir.sh"
+    return compare(run_ref(file_path), run_cmd(file_path))
