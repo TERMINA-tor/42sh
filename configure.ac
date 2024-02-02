@@ -1,6 +1,7 @@
 AC_INIT([42sh], [1.0], [marc.wang@epita.fr])
 AM_INIT_AUTOMAKE([subdir-objects] [foreign])
 
+CFLAGS="-O0"
 AC_PROG_CC
 
 AM_PROG_AR
