@@ -236,7 +236,7 @@ static int is_assignement_word(char *word)
 
 static int is_valid_comment_start(char curr, char previous, char is_quoted)
 {
-    return curr == '#' && !is_quoted && !is_quote(previous) && previous == -1;
+    return curr == '#' && !is_quoted && !is_quote(previous) && (previous == -1 || is_delimitor(previous));
 }
 // gets the next word (in this case word = [:alphanum:])
 static void get_next(struct lexer *lexer, struct Dstring *value)
@@ -258,10 +258,10 @@ static void get_next(struct lexer *lexer, struct Dstring *value)
                 break;
             }
         }
-        else if (curr == '\\' && !is_quoted)
+        else if (curr == '\\' && (!is_quoted || (is_quoted && least_quote == '\"')))
         {
             char tmp = read_from_input(lexer);
-            if (tmp != '\n' && (!is_quoted))
+            if (tmp != '\n' && (!is_quoted || (is_quoted && least_quote == '\"')))
             {
                 Dstring_append(value, curr);
                 Dstring_append(value, tmp);
@@ -269,15 +269,16 @@ static void get_next(struct lexer *lexer, struct Dstring *value)
         }
         else if ((curr == '\'' || curr == '\"'))
         {
+            int save = is_quoted;
             least_quote = handle_quotes(&is_quoted, least_quote, curr);
             Dstring_append(value, curr);
+            if (save && ! is_quoted)
+                break;
         }
         else if ((curr == '$') && (!is_quoted)) // rule_5
         {
             Dstring_append(value, curr);
             handle_dollar(lexer, value);
-            // if (handle_dollar(lexer, value))
-            //   break;
         }
         else if ((!is_quoted) && is_operator(curr) && !is_delimitor(previous))
         {
@@ -304,7 +305,6 @@ static void get_next(struct lexer *lexer, struct Dstring *value)
         previous = curr;
         curr = read_from_input(lexer);
     }
-    // Dstring_append(value, 0);
 }
 
 // simply returns the next available token

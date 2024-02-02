@@ -250,7 +250,7 @@ static size_t handle_double_quote(struct Dlist *list, char *src,
 {
     size_t len = 0;
     int is_escaped = 0;
-    for (size_t i = 1; src[i] && src[i] != '"'; i++)
+    for (size_t i = 1; src[i] && (src[i] != '"' || (src[i] == '"' && is_escaped)); i++)
     {
         if (src[i] == '\\' && !is_escaped)
         {
