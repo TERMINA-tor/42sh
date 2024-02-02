@@ -1,1 +1,2 @@
-cd /tmp/subdir2/subsubdir
+cd /tmp/subdir2/subsubdir;
+echo $PWD;

@@ -1,1 +1,2 @@
-cd tmp/subdir3
+cd tmp/subdir3;
+echo $PWD;
