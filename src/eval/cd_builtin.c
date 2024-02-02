@@ -141,7 +141,7 @@ static int path(struct Dstring **curpath, char *args[], int nb_args)
                 fprintf(stderr, "cd: OLDPWD not set\n");
                 return 1;
             }
-            printf("%s", oldpwd);
+            printf("%s\n", oldpwd);
             setenv("OLDPWD", pwd, 1);
             Dstring_concat(*curpath, oldpwd);
 
