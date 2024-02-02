@@ -315,7 +315,7 @@ struct token get_next_token(struct lexer *lexer)
     Dstring_append(token_value, 0);
     struct token new_token;
     new_token.type = get_token_type(lexer, token_value->value);
-
+    new_token.value = NULL;
     if (new_token.type != TOKEN_WORD)
     {
         Dstring_free(token_value);
@@ -351,7 +351,8 @@ struct token lexer_peek(struct lexer *lexer)
     struct token tok = get_next_token(lexer);
     lexer->least = calloc(1, sizeof(struct token));
     (lexer->least)->type = tok.type;
-    (lexer->least)->value = tok.value;
+    if (tok.value)
+        (lexer->least)->value = tok.value;
     return *(lexer->least);
 }
 
