@@ -42,7 +42,7 @@ struct Dlist *Dlist_init(void);
 
 void Dlist_free(struct Dlist *list);
 
-void expand(struct Dlist *list, char *str);
+int expand(struct Dlist *list, char *str);
 
 // add a variable in the dictionary
 #endif /* ! EXPANSION_H */

@@ -132,6 +132,14 @@ static int is_reserved_word(char *s)
     return 0;
 }
 
+static void clean_command_node(struct ast_cmd *dupe, struct Dlist *list)
+{
+    free(dupe->words);
+    dupe->words = list->list;
+    dupe->num_words = list->size;
+    free(list);
+}
+
 int execute_command(struct ast_cmd *command_node)
 {
     struct ast_cmd *dupe = (struct ast_cmd *)command_node;
@@ -139,13 +147,15 @@ int execute_command(struct ast_cmd *command_node)
     for (size_t i = 0; i < dupe->num_words; i++) // TODO
     {
         char *old_wd = dupe->words[i];
-        expand(list, old_wd);
+        if (expand(list, old_wd))
+        {
+            free(old_wd);
+            clean_command_node(dupe, list);
+            return 2;
+        }
         free(old_wd);
     }
-    free(dupe->words);
-    dupe->words = list->list;
-    dupe->num_words = list->size;
-    free(list);
+    clean_command_node(dupe, list);
 
     if (strcmp(*command_node->words, "echo") == 0)
     {
