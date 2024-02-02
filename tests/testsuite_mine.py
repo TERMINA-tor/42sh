@@ -44,3 +44,11 @@ def test_cd_many_double_dot():
 def test_cd_minus():
     file_path = path_cd + "test_cd_minus.sh"
     return compare(run_ref(file_path), run_cmd(file_path))
+
+def test_cd_noexist():
+    file_path = path_cd + "test_cd_noexist.sh"
+    return compare(run_ref(file_path), run_cmd(file_path))
+
+def test_cd_noexist_with_path():
+    file_path = path_cd + "test_cd_noexist_with_path.sh"
+    return compare(run_ref(file_path), run_cmd(file_path))
