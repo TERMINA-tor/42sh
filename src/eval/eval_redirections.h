@@ -15,4 +15,4 @@
 
 int eval_redirections(struct ast *node);
 
-#endif // EVAL_REDIRECTIONS_H
+#endif /* ! EVAL_REDIRECTIONS_H */

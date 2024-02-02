@@ -16,4 +16,4 @@
 int eval_pipeline(struct ast *node);
 // int eval_negation(struct ast *node);
 
-#endif // EVAL_PIPE_NEGATION_H
+#endif /* ! EVAL_PIPE_NEGATION_H */

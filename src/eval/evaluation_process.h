@@ -8,4 +8,4 @@ void set_loop_break_flag(int);
 void set_loop_continue_flag(int);
 void clean_ast();
 
-#endif // EVALUATION_PROCESS_H
+#endif /* !EVALUATION_PROCESS_H */

@@ -11,20 +11,20 @@
 #include "builtins.h"
 #include "eval_redirections.h"
 
-int evaluate_node(struct ast *node);
-int execute_command(struct ast_cmd *command_node);
-char **convert_children_to_argv(struct ast *node);
-int evaluate_if(struct ast_if *if_node);
-int execute_until(struct ast_loop *until_node);
-int execute_while(struct ast_loop *until_node);
+static int evaluate_node(struct ast *node);
+static int execute_command(struct ast_cmd *command_node);
+static char **convert_children_to_argv(struct ast *node);
+static int evaluate_if(struct ast_if *if_node);
+static int execute_until(struct ast_loop *until_node);
+static int execute_while(struct ast_loop *until_node);
 int evaluate_redirections(struct ast *node);
 int eval_pipeline(struct ast *node);
 int eval_not(struct ast *node);
-int execute_command_non_builtin(char *argv[], size_t num_words);
-int loop_depth = 0;
-int break_called = 0;
-int continue_called = 0;
-struct ast *first_root;
+static int execute_command_non_builtin(char *argv[], size_t num_words);
+static int loop_depth = 0;
+static int break_called = 0;
+static int continue_called = 0;
+static struct ast *first_root;
 
 int evaluate_ast(struct ast *node)
 {
