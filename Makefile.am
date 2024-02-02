@@ -1,4 +1,3 @@
 SUBDIRS = src
 check-local:
-	python3 -m pytest tests/testsuite.py
-	python3 -m pytest tests/testsuite_mine.py
+	python3 -m pytest tests/testsuite.py tests/testsuite_mine.py tests/testbuiltins.py
