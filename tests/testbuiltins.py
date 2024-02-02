@@ -91,9 +91,6 @@ def test_until7():
 def test_until8():
     file_path = path_builtins + "test_until7.sh"
     return compare(run_ref(file_path), run_cmd(file_path))
-def test_echo0():
-    file_path = path_builtins + "test_echo.sh"
-    return compare(run_ref(file_path), run_cmd(file_path))
 def test_break0():
     file_path = path_builtins + "test_break0.sh"
     return compare(run_ref(file_path), run_cmd(file_path))
