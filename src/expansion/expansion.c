@@ -249,9 +249,14 @@ static size_t handle_double_quote(struct Dlist *list, char *src,
                                   struct Dstring *dst)
 {
     size_t len = 0;
+    int is_escaped = 0;
     for (size_t i = 1; src[i] && src[i] != '"'; i++)
     {
-        if (src[i] == '$')
+        if (src[i] == '\\' && !is_escaped)
+        {
+            is_escaped = 1;
+        }
+        else if (!is_escaped && src[i] == '$')
         {
             append_local(list, dst);
             dst = Dstring_new();
@@ -261,21 +266,28 @@ static size_t handle_double_quote(struct Dlist *list, char *src,
         }
         else
         {
+            is_escaped = 0;
             len++;
-            Dstring_append(dst, src[i]);
+            if (src[i] == '\t')
+                Dstring_append(dst, '\\');
+            else
+                Dstring_append(dst, src[i]);
         }
     }
-    // append_local(list, dst);
-    if (src[len] == 0)
-        return 42; // error
     len++;
+    if (src[len] == 0)
+    {
+        fprintf(stderr, "./42sh: missing quote\n");
+        return -1; // error
+    }
     return len;
 }
 
-void expand(struct Dlist *list, char *str)
+int expand(struct Dlist *list, char *str)
 {
     struct Dstring *expanded = Dstring_new();
     int is_escaped = 0;
+    int aux;
     for (size_t i = 0; str[i] != 0; i++)
     {
         if (str[i] == '\\' && !is_escaped)
@@ -285,16 +297,25 @@ void expand(struct Dlist *list, char *str)
         }
         else if (str[i] == '\'' && !is_escaped)
         {
-            i += handle_single_quote(expanded, str + i);
+            aux = handle_single_quote(expanded, str + i);
+            if (aux == -1)
+                goto error;
+            i += aux;
         }
         else if (str[i] == '"' && !is_escaped)
         {
-            i += handle_double_quote(list, str + i, expanded);
+            aux = handle_double_quote(list, str + i, expanded);
+            if (aux == -1)
+                goto error;
+            i += aux;
         }
         else if (str[i] == '$' && !is_escaped)
         {
-            i += handle_dollar(list, str + i,
+            aux = handle_dollar(list, str + i,
                                expanded); // must handle error cases here TODO
+            if (aux == -1)
+                goto error;
+            i += aux;
         }
         else
         {
@@ -306,4 +327,11 @@ void expand(struct Dlist *list, char *str)
         append_local(list, expanded);
     else
         free(expanded);
+    return 0;
+error:
+    if (expanded->size)
+        append_local(list, expanded);
+    else
+        free(expanded);
+    return -1;
 }
