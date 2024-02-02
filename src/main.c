@@ -10,10 +10,10 @@ struct cache g_cache;
 
 void init_cache(int argc, char **argv)
 {
-	g_cache.argc = argc;
-	g_cache.argv =argv;
-	g_cache.dictionary = NULL;
-	g_cache.least_retval = 0;
+    g_cache.argc = argc;
+    g_cache.argv = argv;
+    g_cache.dictionary = NULL;
+    g_cache.least_retval = 0;
 }
 
 int main(int argc, char **argv)
@@ -32,20 +32,20 @@ int main(int argc, char **argv)
     {
         while (lexer_peek(lexer).type == TOKEN_EOL)
             lexer_pop(lexer);
-	if (lexer_peek(lexer).type == TOKEN_EOF)
-		break;
+        if (lexer_peek(lexer).type == TOKEN_EOF)
+            break;
         enum parser_status status = parse_input(&res, lexer);
         if (status == PARSER_UNEXPECTED_TOKEN)
             goto error_2;
         retval = evaluate_ast(res);
-	if (res)
+        if (res)
         {
             free_ast(res);
             res = NULL;
         }
-	g_cache.least_retval = retval;
-	if (retval != 0 && retval != 1)
-		break;
+        g_cache.least_retval = retval;
+        if (retval != 0 && retval != 1)
+            break;
     }
     if (lexer)
         lexer_free(lexer);

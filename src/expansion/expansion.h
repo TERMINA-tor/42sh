@@ -19,8 +19,8 @@ struct cache
 
 struct Dlist
 {
-	char **list;
-	size_t size;
+    char **list;
+    size_t size;
 };
 
 // a linked listed used to store variables

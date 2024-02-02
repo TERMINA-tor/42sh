@@ -15,6 +15,7 @@ enum token_type
     TOKEN_ELIF,
     TOKEN_THEN,
     TOKEN_FI,
+    TOKEN_NOT,
     TOKEN_WHILE,
     TOKEN_UNTIL,
     TOKEN_FOR,
@@ -34,8 +35,9 @@ enum token_type
     TOKEN_AMPREDIR_OUTPUT,
     TOKEN_AMPREDIR_INPUT,
     TOKEN_FORCE_OUTPUT_REDIR,
-    TOKEN_ERROR,
-    TOKEN_REDIRECT_INPUT_OUTPUT
+    TOKEN_REDIRECT_INPUT_OUTPUT,
+    TOKEN_IO_NUMBER,
+    TOKEN_ERROR
 };
 
 // structure representing a keyword in an input

@@ -1,5 +1,12 @@
 #include "parser.h"
 
+// element =
+// WORD
+// | redirection
+// ;
+
+enum parser_status parse_prefix(struct ast **ast, struct lexer *lexer);
+
 enum parser_status parse_input(struct ast **ast, struct lexer *lexer)
 {
     struct token next = lexer_peek(lexer);
@@ -44,7 +51,7 @@ enum parser_status parse_list(struct ast **ast, struct lexer *lexer)
                 (struct ast *)sequence, next_node);
             continue;
         }
-	break;
+        break;
     }
     if (lexer_peek(lexer).type == TOKEN_SEMICOLON)
         lexer_pop(lexer);
@@ -52,9 +59,34 @@ enum parser_status parse_list(struct ast **ast, struct lexer *lexer)
     return PARSER_OK;
 }
 
+// pipeline = ['!'] command { '|' {'\n'} command } ;
+
 enum parser_status parse_pipeline(struct ast **ast, struct lexer *lexer)
 {
-    return parse_command(ast, lexer);
+    struct ast *left_cmd = NULL;
+    if (lexer_peek(lexer).type == TOKEN_NOT)
+        lexer_pop(lexer);
+    if (parse_command(&left_cmd, lexer) != PARSER_OK)
+        return PARSER_UNEXPECTED_TOKEN;
+
+    while (lexer_peek(lexer).type == TOKEN_PIPE)
+    {
+        lexer_pop(lexer);
+        struct ast_pipeline *pipeline = ast_pipeline_init();
+        pipeline->left_cmd = left_cmd;
+        while (lexer_peek(lexer).type == TOKEN_EOL)
+        {
+            lexer_pop(lexer);
+        }
+        if (parse_command(&pipeline->right_cmd, lexer) != PARSER_OK)
+        {
+            free_ast((struct ast *)pipeline);
+            return PARSER_UNEXPECTED_TOKEN;
+        }
+        left_cmd = (struct ast *)pipeline;
+    }
+    *ast = left_cmd;
+    return PARSER_OK;
 }
 
 enum parser_status parse_command(struct ast **ast, struct lexer *lexer)
@@ -64,26 +96,38 @@ enum parser_status parse_command(struct ast **ast, struct lexer *lexer)
     return parse_shell_command(ast, lexer);
 }
 
+// simple_command =
+// prefix { prefix }
+// | { prefix } WORD { element }
+// ;
+
 enum parser_status parse_simple_command(struct ast **ast, struct lexer *lexer)
 {
-    if (lexer_peek(lexer).type != TOKEN_WORD)
-        return PARSER_UNEXPECTED_TOKEN;
     struct ast *new = ast_cmd_init();
-    *ast = new;
-    if (!ast_cmd_word_add(*ast, lexer_pop(lexer).value))
-        return PARSER_UNEXPECTED_TOKEN;
-    while (parse_element(ast, lexer) == PARSER_OK)
+    while (parse_prefix(ast, lexer) == PARSER_OK)
         ;
+    if (lexer_peek(lexer).type != TOKEN_WORD)
+        goto error;
+    if (!ast_cmd_word_add(new, lexer_pop(lexer).value))
+        goto error;
+    while (parse_element(&new, lexer) == PARSER_OK)
+        ;
+    *ast = new;
     return PARSER_OK;
+
+error:
+    free_ast(new);
+    return PARSER_UNEXPECTED_TOKEN;
 }
 
 enum parser_status parse_element(struct ast **ast, struct lexer *lexer)
 {
-    if (lexer_peek(lexer).type != TOKEN_WORD)
-        return PARSER_UNEXPECTED_TOKEN;
-
-    if (!ast_cmd_word_add(*ast, lexer_pop(lexer).value))
-        return PARSER_UNEXPECTED_TOKEN;
-
-    return PARSER_OK;
+    struct token next = lexer_peek(lexer);
+    if (next.type == TOKEN_WORD)
+    {
+        if (!ast_cmd_word_add(*ast, lexer_pop(lexer).value))
+            return PARSER_UNEXPECTED_TOKEN;
+        return PARSER_OK;
+    }
+    return parse_redirection(ast, lexer);
 }

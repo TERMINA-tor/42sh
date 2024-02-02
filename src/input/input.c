@@ -44,13 +44,13 @@ FILE *get_input(int argc, char **argv)
                 return input_error(fd);
         }
         else
-	{
-	    if (found_file)
-		    break;
+        {
+            if (found_file)
+                break;
             return input_error(fd);
-	}
-	g_cache.argc--;
-	g_cache.argv++;
+        }
+        g_cache.argc--;
+        g_cache.argv++;
     }
     return fd;
 }

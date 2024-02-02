@@ -30,9 +30,9 @@ enum parser_status parse_while(struct ast **ast, struct lexer *lexer)
     *ast = (struct ast *)node;
     return PARSER_OK;
 
-    error:
-        free_ast((struct ast *)node);
-        return PARSER_UNEXPECTED_TOKEN;
+error:
+    free_ast((struct ast *)node);
+    return PARSER_UNEXPECTED_TOKEN;
 }
 
 enum parser_status parse_until(struct ast **ast, struct lexer *lexer)
@@ -60,7 +60,7 @@ enum parser_status parse_until(struct ast **ast, struct lexer *lexer)
     *ast = (struct ast *)node;
     return PARSER_OK;
 
-    error:
-        free_ast((struct ast *)node);
-        return PARSER_UNEXPECTED_TOKEN;
+error:
+    free_ast((struct ast *)node);
+    return PARSER_UNEXPECTED_TOKEN;
 }

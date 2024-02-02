@@ -1,7 +1,7 @@
 bin_PROGRAMS = 42sh
 42sh_SOURCES = main.c
 
-42sh_CFLAGS = -Wall -Wextra -Werror -std=c99 -pedantic -D_POSIX_SOURCE=200809L -fsanitize=address -O3
+42sh_CFLAGS = -Wall -Wextra -Werror -std=c99 -pedantic -D_POSIX_SOURCE=200809L -fsanitize=address -O0
 42sh_CPPFLAGS = -I$(top_srcdir)/src
 
 42sh_LDADD = \

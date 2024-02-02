@@ -19,6 +19,7 @@ int execute_until(struct ast_loop *until_node);
 int execute_while(struct ast_loop *until_node);
 int evaluate_redirections(struct ast *node);
 int eval_pipeline(struct ast *node);
+int eval_not(struct ast *node);
 int execute_command_non_builtin(char *argv[], size_t num_words);
 int loop_depth = 0;
 int break_called = 0;
@@ -74,6 +75,10 @@ int evaluate_node(struct ast *node)
         return evaluate_redirections(node);
     case AST_PIPELINE:
         return eval_pipeline(node);
+        break;
+    case AST_NOT:
+        return eval_not(node);
+        break;
     default:
         fprintf(stderr, "Unknown AST node type\n");
         return -1;
@@ -141,7 +146,7 @@ int execute_command(struct ast_cmd *command_node)
     {
         char *old_wd = dupe->words[i];
         expand(list, old_wd);
-	free(old_wd);
+        free(old_wd);
     }
     free(dupe->words);
     dupe->words = list->list;

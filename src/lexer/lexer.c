@@ -20,7 +20,7 @@ void lexer_free(struct lexer *lexer)
     if (lexer->fd)
         fclose(lexer->fd);
     if (lexer->least)
-	    free(lexer->least);
+        free(lexer->least);
     free(lexer);
 }
 
@@ -32,7 +32,7 @@ static char read_from_input(struct lexer *lexer)
         return EOF;
     char curr = fgetc(lexer->fd);
     if (curr != EOF)
-    	lexer->offset++;
+        lexer->offset++;
     return curr;
 }
 
@@ -48,7 +48,7 @@ static void push_output(char c, struct lexer *lexer)
 // that can be used in an operator or not
 static int is_operator(char c)
 {
-    char *operators = "&|<>;\n";
+    char *operators = "&|<>;=\n";
     for (size_t i = 0; operators[i]; i++)
     {
         if (c == operators[i])
@@ -95,6 +95,7 @@ static enum token_type get_token_type(struct lexer *lexer, char *value)
                                          { TOKEN_THEN, "then" },
                                          { TOKEN_ELIF, "elif" },
                                          { TOKEN_FI, "fi" },
+                                         { TOKEN_NOT, "!" },
                                          { TOKEN_WHILE, "while" },
                                          { TOKEN_UNTIL, "until" },
                                          { TOKEN_FOR, "for" },
@@ -109,13 +110,16 @@ static enum token_type get_token_type(struct lexer *lexer, char *value)
                                          { TOKEN_APPEND_OUTPUT, ">>" },
                                          { TOKEN_AMPREDIR_OUTPUT, ">&" },
                                          { TOKEN_AMPREDIR_INPUT, "<&" },
-                                         { TOKEN_FORCE_OUTPUT_REDIR, ">|" } };
+                                         { TOKEN_FORCE_OUTPUT_REDIR, ">|" },
+                                         { TOKEN_REDIRECT_INPUT_OUTPUT,
+                                           "<>" } };
     size_t table_length = sizeof(table) / sizeof(struct lookuptable);
     for (size_t i = 0; i < table_length; i++)
     {
         if (!strcmp(table[i].value, value))
         {
-            if (lexer->in_command && table[i].token_type >= TOKEN_IF && table[i].token_type <= TOKEN_DONE)
+            if (lexer->in_command && table[i].token_type >= TOKEN_IF
+                && table[i].token_type <= TOKEN_DONE)
                 return TOKEN_WORD;
             else
                 return table[i].token_type;
@@ -126,9 +130,9 @@ static enum token_type get_token_type(struct lexer *lexer, char *value)
 
 static int is_valid_variable(char c)
 {
-	int k = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || (c == '@') 
-		|| (c == '*') || (c == '#');
-	return k;
+    int k = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
+        || (c >= '0' && c <= '9') || (c == '@') || (c == '*') || (c == '#');
+    return k;
 }
 
 // handle the case of an unquoted ${}
@@ -138,30 +142,30 @@ static int handle_dollar(struct lexer *lexer, struct Dstring *value)
     int is_embeded = 0;
     if (tmp == '{')
     {
-	Dstring_append(value, '{');
-	tmp = read_from_input(lexer);
-	is_embeded = 1; // only $name && ${name} will be tested
+        Dstring_append(value, '{');
+        tmp = read_from_input(lexer);
+        is_embeded = 1; // only $name && ${name} will be tested
     }
     while (tmp != EOF && is_valid_variable(tmp))
     {
         Dstring_append(value, tmp);
-	tmp = read_from_input(lexer);
+        tmp = read_from_input(lexer);
     }
-    
+
     if (tmp != EOF && !is_valid_variable(tmp))
     {
-	    if (tmp == '}')
-	    {
-		    if (is_embeded)
-		    {
-			    is_embeded = 0;
-			    Dstring_append(value, '}');
-		    }
-		    else
-			    push_output('}', lexer);
-	    }
-	    else
-		    push_output(tmp, lexer);
+        if (tmp == '}')
+        {
+            if (is_embeded)
+            {
+                is_embeded = 0;
+                Dstring_append(value, '}');
+            }
+            else
+                push_output('}', lexer);
+        }
+        else
+            push_output(tmp, lexer);
     }
     return 1;
 }
@@ -188,62 +192,62 @@ static char handle_quotes(int *is_quoted, char least_quote, char curr)
 // tells wether word is an assignement word or not
 static int is_assignement_word(char *word)
 {
-	char least_quote = -1;
-	int in_quote = 0;
-	int is_escaped = 0;
-	int is_embeded = 0; // wheter = is between {} or not
-	for (size_t i = 0; word[i]; i ++)
-	{
-		if (is_quote(word[i]))
-			least_quote = handle_quotes(&in_quote, least_quote, word[i]);
-		if (in_quote)
-			continue;
-		else if (is_escaped)
-		{
-			is_escaped = 0;
-			continue;
-		}
-		else if (word[i] == '\\')
-		{
-			is_escaped = 1;
-			continue;
-		}
-		else if (word[i] == '{')
-		{
-			is_embeded += 1;
-			continue;
-		}
-		else if (word[i] == '}')
-		{
-			is_embeded -= 1;
-			continue;
-		}
-		else if (word[i] == '=')
-		{
-			if (is_embeded)
-				continue;
-			if (i == 0)
-				return 0;
-			return 1;	
-		}
-	}
-	return 0;
+    char least_quote = -1;
+    int in_quote = 0;
+    int is_escaped = 0;
+    int is_embeded = 0; // wheter = is between {} or not
+    for (size_t i = 0; word[i]; i++)
+    {
+        if (is_quote(word[i]))
+            least_quote = handle_quotes(&in_quote, least_quote, word[i]);
+        if (in_quote)
+            continue;
+        else if (is_escaped)
+        {
+            is_escaped = 0;
+            continue;
+        }
+        else if (word[i] == '\\')
+        {
+            is_escaped = 1;
+            continue;
+        }
+        else if (word[i] == '{')
+        {
+            is_embeded += 1;
+            continue;
+        }
+        else if (word[i] == '}')
+        {
+            is_embeded -= 1;
+            continue;
+        }
+        else if (word[i] == '=')
+        {
+            if (is_embeded)
+                continue;
+            if (i == 0)
+                return 0;
+            return 1;
+        }
+    }
+    return 0;
 }
 
 static int is_valid_comment_start(char curr, char previous, char is_quoted)
 {
-	return curr == '#' && !is_quoted && !is_quote(previous) && previous == -1;
+    return curr == '#' && !is_quoted && !is_quote(previous) && previous == -1;
 }
-//gets the next word (in this case word = [:alphanum:])
+// gets the next word (in this case word = [:alphanum:])
 static void get_next(struct lexer *lexer, struct Dstring *value)
 {
     char previous = -1; // previous character
     char curr = read_from_input(lexer);
     char least_quote = -1; // keeps track of the last quote type (\' | \")
     int is_quoted = 0;
-    while (curr != EOF) // rule_1 
+    while (curr != EOF) // rule_1
     {
-	// add condition for eof
+        // add condition for eof
         if (is_operator(previous) & !is_quoted)
         {
             if (is_operator(curr) && curr != '\n' && previous != '\n') // rule_2
@@ -258,10 +262,10 @@ static void get_next(struct lexer *lexer, struct Dstring *value)
         {
             char tmp = read_from_input(lexer);
             if (tmp != '\n' && (!is_quoted))
-	    {
-		Dstring_append(value, curr);
+            {
+                Dstring_append(value, curr);
                 push_output(tmp, lexer); // \\n = line continuation
-	    }
+            }
         }
         else if ((curr == '\'' || curr == '\"') && !is_delimitor(previous))
         {
@@ -272,8 +276,8 @@ static void get_next(struct lexer *lexer, struct Dstring *value)
         {
             Dstring_append(value, curr);
             handle_dollar(lexer, value);
-	    //if (handle_dollar(lexer, value))
-              //  break;
+            // if (handle_dollar(lexer, value))
+            //   break;
         }
         else if ((!is_quoted) && is_operator(curr) && !is_delimitor(previous))
         {
@@ -311,7 +315,7 @@ struct token get_next_token(struct lexer *lexer)
     Dstring_append(token_value, 0);
     struct token new_token;
     new_token.type = get_token_type(lexer, token_value->value);
-    
+
     if (new_token.type != TOKEN_WORD)
     {
         Dstring_free(token_value);
@@ -320,12 +324,17 @@ struct token get_next_token(struct lexer *lexer)
     {
         new_token.value = token_value->value;
         free(token_value);
-	if (is_assignement_word(new_token.value))
-		new_token.type = TOKEN_ASSIGNEMENT;
+        if (is_assignement_word(new_token.value))
+            new_token.type = TOKEN_ASSIGNEMENT;
     }
 
     if (new_token.type == TOKEN_SEMICOLON || new_token.type == TOKEN_EOL)
         lexer->in_command = 0;
+    if (new_token.value[0] == '!' && !lexer->in_command)
+    {
+        free(new_token.value);
+        new_token.type = TOKEN_NOT;
+    }
     else if (new_token.type == TOKEN_WORD)
         lexer->in_command = 1;
 
@@ -336,13 +345,13 @@ struct token get_next_token(struct lexer *lexer)
 // the lexers offset
 struct token lexer_peek(struct lexer *lexer)
 {
-	if (lexer->least)
-		return *(lexer->least);
-	struct token tok = get_next_token(lexer);
-	lexer->least = calloc(1, sizeof(struct token));
-	(lexer->least)->type = tok.type;
-	(lexer->least)->value = tok.value;
-	return *(lexer->least);
+    if (lexer->least)
+        return *(lexer->least);
+    struct token tok = get_next_token(lexer);
+    lexer->least = calloc(1, sizeof(struct token));
+    (lexer->least)->type = tok.type;
+    (lexer->least)->value = tok.value;
+    return *(lexer->least);
 }
 
 // returns the next available token saving the offset
@@ -351,11 +360,11 @@ struct token lexer_pop(struct lexer *lexer)
 {
     struct token save;
     if (lexer->least)
-	    save = *(lexer->least);
+        save = *(lexer->least);
     else
     {
-	    lexer_peek(lexer);
-	    save = *(lexer->least);
+        lexer_peek(lexer);
+        save = *(lexer->least);
     }
     free(lexer->least);
     lexer->least = NULL;

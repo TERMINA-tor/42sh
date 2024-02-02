@@ -6,25 +6,29 @@ int eval_pipeline(struct ast *node)
 {
     struct ast_pipeline *pipeline = (struct ast_pipeline *)node;
     int pipefd[2];
-    int ret = 0;
+    int status;
+    pid_t pid;
 
     if (pipe(pipefd) == -1)
     {
-        fprintf(stderr, "pipe failed\n");
+        perror("pipe");
         return -1;
     }
 
-    pid_t pid = fork();
+    pid = fork();
     if (pid == 0)
     {
         close(pipefd[0]);
         dup2(pipefd[1], 1);
-        ret = execute_command((struct ast_cmd *)pipeline->left_cmd);
+        if (pipeline->left_cmd->type == AST_PIPELINE)
+            eval_pipeline(pipeline->left_cmd);
+        else
+            execute_command((struct ast_cmd *)pipeline->left_cmd);
         exit(EXIT_SUCCESS);
     }
     else if (pid < 0)
     {
-        fprintf(stderr, "fork failed\n");
+        perror("fork");
         return -1;
     }
 
@@ -33,12 +37,12 @@ int eval_pipeline(struct ast *node)
     {
         close(pipefd[1]);
         dup2(pipefd[0], 0);
-        ret = execute_command((struct ast_cmd *)pipeline->right_cmd);
+        execute_command((struct ast_cmd *)pipeline->right_cmd);
         exit(EXIT_SUCCESS);
     }
     else if (pid < 0)
     {
-        fprintf(stderr, "fork failed\n");
+        perror("fork");
         return -1;
     }
 
@@ -46,22 +50,21 @@ int eval_pipeline(struct ast *node)
     close(pipefd[1]);
 
     wait(NULL);
-    wait(NULL);
+    waitpid(pid, &status, 0);
 
-    return ret;
+    if (WIFEXITED(status))
+    {
+        return WEXITSTATUS(status);
+    }
+    else
+    {
+        return -1;
+    }
 }
 
-// int eval_negation(struct ast *node)
-// {
-//     struct ast_negation *negation = (struct ast_negation *)node;
-//     int res = evaluate_node(negation->child);
-//     if (res == builtin_true())
-//     {
-//         return builtin_false();
-//     }
-//     else if (res == builtin_false())
-//     {
-//         return builtin_true();
-//     }
-//     return res;
-// }
+int eval_not(struct ast *node)
+{
+    struct ast_not *not_node = (struct ast_not *)node;
+    int status = execute_command((struct ast_cmd *)not_node->command);
+    return !status;
+}
