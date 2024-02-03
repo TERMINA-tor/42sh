@@ -146,10 +146,36 @@ def test_special_quote_1():
     file_path = path_dquotes + escape + "special_quote_1"
     return compare(run_ref(file_path), run_cmd(file_path))
 
-#def test_special_quote_2():
-#    file_path = path_dquotes + "special_quote_2"
-#    return compare(run_ref(file_path), run_cmd(file_path))
-#
-#def test_weird_args():
-#    file_path = path_dquotes + "weird_args"
-#    return compare(run_ref(file_path), run_cmd(file_path))
+def test_special_quote_2():
+    file_path = path_dquotes + escape + "special_quote_2"
+    return compare(run_ref(file_path), run_cmd(file_path))
+
+def test_weird_args():
+    file_path = path_dquotes + escape + "weird_args"
+    return compare(run_ref(file_path), run_cmd(file_path))
+
+#multiple successive quotes
+
+def test_different_successive_quotes():
+    file_path = path_dquotes + "differen_successive_quotes"
+    return compare(run_ref(file_path), run_cmd(file_path))
+
+def test_different_successive_quotes1():
+    file_path = path_dquotes + "differen_successive_quotes1"
+    return compare(run_ref(file_path), run_cmd(file_path))
+
+def test_different_successive_quotes2():
+    file_path = path_dquotes + "differen_successive_quotes2"
+    return compare(run_ref(file_path), run_cmd(file_path))
+
+def test_different_successive_quotes3():
+    file_path = path_dquotes + "differen_successive_quotes3"
+    return compare(run_ref(file_path), run_cmd(file_path))
+
+def test_different_successive_quotes4():
+    file_path = path_dquotes + "differen_successive_quotes4"
+    return compare(run_ref(file_path), run_cmd(file_path))
+
+def test_empy_cmd():
+    fils_path = path_dquotes + "empty_cmd"
+    return compare(run_ref(file_path), run_cmd(file_path))
