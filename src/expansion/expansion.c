@@ -263,13 +263,12 @@ static size_t handle_double_quote(struct Dlist *list, char *src,
 {
     size_t len = 1;
     int is_escaped = 0;
-    char least = 0;
     for (size_t i = 1; src[i] && (src[i] != '"' || (src[i] == '"' && is_escaped)); i++)
     {
         if (src[i] == '\\' && !is_escaped)
         {
             is_escaped = 1;
-	    len++;
+            len++;
         }
         else if (!is_escaped && src[i] == '$')
         {
@@ -283,13 +282,8 @@ static size_t handle_double_quote(struct Dlist *list, char *src,
             len++;
             Dstring_append(dst, src[i]);
         }
-	least = src[i];
-	if (least == '"' && src[i + 1] == '"') // just added TODO
-		i++;
     }
-    if (least != 0 && src[len +1] == '"')
-	    len++;
-    if (src[len] == 0)
+    if (src[len] == 0 && src[len - 1] != '"')
     {
         fprintf(stderr, "./42sh: missing quote\n");
         return -1; // error

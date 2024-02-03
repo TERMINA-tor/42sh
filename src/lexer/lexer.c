@@ -187,9 +187,9 @@ static char handle_quotes(int *is_quoted, char least_quote, char curr)
 {
     int save = *is_quoted;
     *is_quoted ^= (least_quote == curr) || least_quote == -1;
-    //return *is_quoted ? curr : least_quote;
     if (save && is_quoted)
 	    return least_quote;
+    
     return curr;
 }
 
@@ -249,6 +249,12 @@ static void append_two_chars(struct Dstring *value, char curr, char tmp)
 	Dstring_append(value, tmp);
 }
 
+static int lookup_char(struct lexer *lex)
+{
+	char next = read_from_input(lex);
+	push_output(next, lex);
+	return (next == '"' || next == '\'');
+}
 // gets the next word (in this case word = [:alphanum:])
 static void get_next(struct lexer *lexer, struct Dstring *value)
 {
@@ -281,7 +287,15 @@ static void get_next(struct lexer *lexer, struct Dstring *value)
             least_quote = handle_quotes(&is_quoted, least_quote, curr);
             Dstring_append(value, curr);
             if (save && ! is_quoted)
-                break;
+	    {
+		    if (lookup_char(lexer))
+		    {
+			    previous = curr;
+			    curr = read_from_input(lexer);
+			    continue;
+		    }
+		    break;
+	    }
         }
         else if ((curr == '$') && (!is_quoted)) // rule_5
         {
