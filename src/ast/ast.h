@@ -55,7 +55,7 @@ struct ast_sequence
 struct ast_redirection
 {
     struct ast base;
-    struct ast_cmd *command; // the command to redirect
+    struct ast *command; // the command to redirect
     char **filenames; // the filenames to redirect to
     int num_filenames; // the number of filenames
     enum token_type type; // the type of redirection

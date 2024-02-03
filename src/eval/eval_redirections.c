@@ -52,25 +52,37 @@ static int eval_redir_input(struct ast_redirection *redirection, int i)
 {
     int fd;
     int ret = 0;
+    int stdin_copy;
+
+    stdin_copy = dup(0);
+
     fd = open(redirection->filenames[i], O_RDONLY);
     if (fd == -1)
     {
         perror("open");
         return 1;
     }
-    ret = dup2(fd, 0);
+    dup2(fd, 0);
     if (ret == -1)
     {
         perror("dup2");
+        close(fd);
         return 1;
     }
-    if (redirection->num_filenames - 1 == i)
-        ret = execute_command((struct ast_cmd *)redirection->command);
-    if (close(fd) == -1)
+    if (redirection->num_filenames - 1 == i && redirection->command)
     {
-        perror("close");
-        return 1;
+        if (redirection->command->type != AST_COMMAND)
+            ret = evaluate_ast(redirection->command);
+        else
+            ret = execute_command((struct ast_cmd *)redirection->command);
+        close(fd);
     }
+    else
+        close(fd);
+
+    dup2(stdin_copy, 1);
+    close(stdin_copy);
+
     return ret;
 }
 
@@ -78,6 +90,10 @@ static int eval_redir_output(struct ast_redirection *redirection, int i)
 {
     int fd;
     int ret = 0;
+    int stdout_copy;
+
+    stdout_copy = dup(1);
+
     fd = open(redirection->filenames[i], O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (fd == -1)
     {
@@ -88,16 +104,21 @@ static int eval_redir_output(struct ast_redirection *redirection, int i)
     if (ret == -1)
     {
         perror("dup2");
+        close(fd);
         return 1;
     }
-    if (redirection->num_filenames - 1 == i)
-        if (redirection->num_filenames - 1 == i)
-            ret = execute_command((struct ast_cmd *)redirection->command);
-    if (close(fd) == -1)
+    close(fd);
+    if (redirection->num_filenames - 1 == i && redirection->command)
     {
-        perror("close");
-        return 1;
+        if (redirection->command->type != AST_COMMAND)
+            ret = evaluate_ast(redirection->command);
+        else
+            ret = execute_command((struct ast_cmd *)redirection->command);
     }
+
+    dup2(stdout_copy, 1);
+    close(stdout_copy);
+
     return ret;
 }
 
@@ -105,6 +126,9 @@ static int eval_append_output(struct ast_redirection *redirection, int i)
 {
     int fd;
     int ret = 0;
+    int stdout_copy;
+    stdout_copy = dup(1);
+
     fd = open(redirection->filenames[i], O_WRONLY | O_CREAT | O_APPEND, 0644);
     if (fd == -1)
     {
@@ -115,15 +139,21 @@ static int eval_append_output(struct ast_redirection *redirection, int i)
     if (ret == -1)
     {
         perror("dup2");
+        close(fd);
         return 1;
     }
-    if (redirection->num_filenames - 1 == i)
-        ret = execute_command((struct ast_cmd *)redirection->command);
-    if (close(fd) == -1)
+    if (redirection->num_filenames - 1 == i && redirection->command)
     {
-        perror("close");
-        return 1;
+        if (redirection->command->type != AST_COMMAND)
+            ret = evaluate_ast(redirection->command);
+        else
+            ret = execute_command((struct ast_cmd *)redirection->command);
     }
+
+    dup2(stdout_copy, 1);
+    close(stdout_copy);
+
+    close(fd);
     return ret;
 }
 
@@ -131,6 +161,11 @@ static int eval_ampredir_output(struct ast_redirection *redirection, int i)
 {
     int fd;
     int ret = 0;
+    int stdout_copy;
+    int stderr_copy;
+    stdout_copy = dup(1);
+    stderr_copy = dup(2);
+
     fd = open(redirection->filenames[i], O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (fd == -1)
     {
@@ -138,24 +173,23 @@ static int eval_ampredir_output(struct ast_redirection *redirection, int i)
         return 1;
     }
     dup2(fd, 1);
-    if (ret == -1)
-    {
-        perror("dup2");
-        return 1;
-    }
     dup2(1, 2);
-    if (ret == -1)
+    if (redirection->num_filenames - 1 == i && redirection->command)
     {
-        perror("dup2");
-        return 1;
+        if (redirection->command->type != AST_COMMAND)
+            ret = evaluate_ast(redirection->command);
+        else
+            ret = execute_command((struct ast_cmd *)redirection->command);
+        close(fd);
     }
-    if (redirection->num_filenames - 1 == i)
-        ret = execute_command((struct ast_cmd *)redirection->command);
-    if (close(fd) == -1)
-    {
-        perror("close");
-        return 1;
-    }
+    else
+        close(fd);
+
+    dup2(stdout_copy, 1);
+    dup2(stderr_copy, 2);
+    close(stdout_copy);
+    close(stderr_copy);
+
     return ret;
 }
 
@@ -163,6 +197,9 @@ static int eval_ampredir_input(struct ast_redirection *redirection, int i)
 {
     int fd;
     int ret = 0;
+    int stdin_copy = dup(0);
+    int stdout_copy = dup(1);
+
     fd = open(redirection->filenames[i], O_RDONLY);
     if (fd == -1)
     {
@@ -170,24 +207,23 @@ static int eval_ampredir_input(struct ast_redirection *redirection, int i)
         return 1;
     }
     dup2(fd, 0);
-    if (ret == -1)
-    {
-        perror("dup2");
-        return 1;
-    }
     dup2(0, 1);
-    if (ret == -1)
+    if (redirection->num_filenames - 1 == i && redirection->command)
     {
-        perror("dup2");
-        return 1;
+        if (redirection->command->type != AST_COMMAND)
+            ret = evaluate_ast(redirection->command);
+        else
+            ret = execute_command((struct ast_cmd *)redirection->command);
+        close(fd);
     }
-    if (redirection->num_filenames - 1 == i)
-        ret = execute_command((struct ast_cmd *)redirection->command);
-    if (close(fd) == -1)
-    {
-        perror("close");
-        return 1;
-    }
+    else
+        close(fd);
+
+    dup2(stdin_copy, 0);
+    dup2(stdout_copy, 1);
+    close(stdin_copy);
+    close(stdout_copy);
+
     return ret;
 }
 
@@ -195,6 +231,9 @@ static int eval_force_output_redir(struct ast_redirection *redirection, int i)
 {
     int fd;
     int ret = 0;
+    int stdout_copy = dup(1);
+    int stderr_copy = dup(2);
+
     fd = open(redirection->filenames[i], O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (fd == -1)
     {
@@ -202,24 +241,23 @@ static int eval_force_output_redir(struct ast_redirection *redirection, int i)
         return 1;
     }
     dup2(fd, 1);
-    if (ret == -1)
-    {
-        perror("dup2");
-        return 1;
-    }
     dup2(1, 2);
-    if (ret == -1)
+    if (redirection->num_filenames - 1 == i && redirection->command)
     {
-        perror("dup2");
-        return 1;
+        if (redirection->command->type != AST_COMMAND)
+            ret = evaluate_ast(redirection->command);
+        else
+            ret = execute_command((struct ast_cmd *)redirection->command);
+        close(fd);
     }
-    if (redirection->num_filenames - 1 == i)
-        ret = execute_command((struct ast_cmd *)redirection->command);
-    if (close(fd) == -1)
-    {
-        perror("close");
-        return 1;
-    }
+    else
+        close(fd);
+
+    dup2(stdout_copy, 1);
+    dup2(stderr_copy, 2);
+    close(stdout_copy);
+    close(stderr_copy);
+
     return ret;
 }
 
@@ -227,6 +265,9 @@ static int eval_redir_input_output(struct ast_redirection *redirection, int i)
 {
     int fd;
     int ret = 0;
+    int stdin_copy = dup(0);
+    int stdout_copy = dup(1);
+
     fd = open(redirection->filenames[i], O_RDWR | O_CREAT, 0644);
     if (fd == -1)
     {
@@ -234,23 +275,22 @@ static int eval_redir_input_output(struct ast_redirection *redirection, int i)
         return 1;
     }
     dup2(fd, 0);
-    if (ret == -1)
-    {
-        perror("dup2");
-        return 1;
-    }
     dup2(fd, 1);
-    if (ret == -1)
+    if (redirection->num_filenames - 1 == i && redirection->command)
     {
-        perror("dup2");
-        return 1;
+        if (redirection->command->type != AST_COMMAND)
+            ret = evaluate_ast(redirection->command);
+        else
+            ret = execute_command((struct ast_cmd *)redirection->command);
+        close(fd);
     }
-    if (redirection->num_filenames - 1 == i)
-        ret = execute_command((struct ast_cmd *)redirection->command);
-    if (close(fd) == -1)
-    {
-        perror("close");
-        return 1;
-    }
+    else
+        close(fd);
+
+    dup2(stdin_copy, 0);
+    dup2(stdout_copy, 1);
+    close(stdin_copy);
+    close(stdout_copy);
+
     return ret;
 }

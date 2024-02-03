@@ -29,24 +29,33 @@ enum parser_status parse_redirection(struct ast **ast, struct lexer *lexer)
         next = lexer_peek(lexer);
     }
     else
-        return PARSER_UNEXPECTED_TOKEN;
+        goto error;
 
-    while (next.type == TOKEN_WORD)
-    {
-        next = lexer_pop(lexer);
-        redirection->filenames =
-            realloc(redirection->filenames,
-                    sizeof(char *) * (redirection->num_filenames + 1));
-        redirection->filenames[redirection->num_filenames] = next.value;
-        redirection->num_filenames++;
-        if (redirection->command == NULL)
-            redirection->command = (struct ast_cmd *)*ast;
-        *ast = (struct ast *)redirection;
-        next = lexer_peek(lexer);
-        if (!is_redirection(next.type))
-            break;
-        lexer_pop(lexer);
-        next = lexer_peek(lexer);
-    }
+    if (next.type == TOKEN_WORD)
+        while (next.type == TOKEN_WORD)
+        {
+            next = lexer_pop(lexer);
+            redirection->filenames =
+                realloc(redirection->filenames,
+                        sizeof(char *) * (redirection->num_filenames + 1));
+            redirection->filenames[redirection->num_filenames] = next.value;
+            redirection->num_filenames++;
+            if (redirection->command == NULL)
+                redirection->command = *ast;
+            *ast = (struct ast *)redirection;
+            next = lexer_peek(lexer);
+            if (!is_redirection(next.type))
+                break;
+            lexer_pop(lexer);
+            next = lexer_peek(lexer);
+            if (next.type != TOKEN_WORD)
+                goto error;
+        }
+    else
+        goto error;
     return PARSER_OK;
+
+    error:
+        free_ast((struct ast *)redirection);
+        return PARSER_UNEXPECTED_TOKEN;
 }

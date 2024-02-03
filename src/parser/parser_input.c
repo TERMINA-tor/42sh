@@ -101,17 +101,52 @@ enum parser_status parse_command(struct ast **ast, struct lexer *lexer)
 // | { prefix } WORD { element }
 // ;
 
+static int is_redirection(enum token_type type)
+{
+    return (type == TOKEN_REDIRECT_INPUT || type == TOKEN_REDIRECT_OUTPUT
+            || type == TOKEN_APPEND_OUTPUT || type == TOKEN_AMPREDIR_OUTPUT
+            || type == TOKEN_AMPREDIR_INPUT || type == TOKEN_FORCE_OUTPUT_REDIR
+            || type == TOKEN_REDIRECT_INPUT_OUTPUT);
+}
+
 enum parser_status parse_simple_command(struct ast **ast, struct lexer *lexer)
 {
     struct ast *new = ast_cmd_init();
-    while (parse_prefix(ast, lexer) == PARSER_OK)
-        ;
-    if (lexer_peek(lexer).type != TOKEN_WORD)
-        goto error;
-    if (!ast_cmd_word_add(new, lexer_pop(lexer).value))
-        goto error;
-    while (parse_element(&new, lexer) == PARSER_OK)
-        ;
+    if (parse_prefix(&new, lexer) == PARSER_OK)
+        while (parse_prefix(&new, lexer) == PARSER_OK);
+
+    else
+    {       
+        while (parse_prefix(ast, lexer) == PARSER_OK)
+            ;
+        if (lexer_peek(lexer).type != TOKEN_WORD)
+            goto error;
+        if (!ast_cmd_word_add(new, lexer_pop(lexer).value))
+            goto error;
+        
+        struct token token = lexer_peek(lexer);
+        while (token.type == TOKEN_WORD || is_redirection(token.type))
+        {
+            if (token.type == TOKEN_WORD)
+            {
+                if (parse_element(&new, lexer) == PARSER_OK)
+                {
+                    token = lexer_peek(lexer);
+                    continue;
+                }
+                else
+                    goto error;
+            }
+            else
+            {
+                if (parse_element(&new, lexer) != PARSER_OK)
+                    goto error;
+                else
+                    token = lexer_peek(lexer);
+            }
+        }
+    }
+    
     *ast = new;
     return PARSER_OK;
 
