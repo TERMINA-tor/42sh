@@ -156,8 +156,9 @@ int execute_command(struct ast_cmd *command_node)
         free(old_wd);
     }
     clean_command_node(dupe, list);
-
-    if (strcmp(*command_node->words, "echo") == 0)
+    if (!command_node->words)
+	    return 127;
+    else if (strcmp(*command_node->words, "echo") == 0)
     {
         return builtin_echo(command_node->words + 1, command_node->num_words);
     }

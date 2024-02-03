@@ -177,5 +177,5 @@ def test_different_successive_quotes4():
     return compare(run_ref(file_path), run_cmd(file_path))
 
 def test_empy_cmd():
-    fils_path = path_dquotes + "empty_cmd"
+    file_path = path_dquotes + "empty_cmd"
     return compare(run_ref(file_path), run_cmd(file_path))
