@@ -105,16 +105,18 @@ static void option_cdpath(struct Dstring **curpath, char *input)
 static void build_with_pwd(struct Dstring **curpath)
 {
     struct Dstring *final = Dstring_new();
-    char *pwd = getenv("PWD");
-    if (pwd)
-    {
-        Dstring_concat(final, pwd);
-        if (final->value[final->size - 1] != '/')
-            Dstring_append(final, '/');
-        Dstring_concat_string(final, *curpath);
-        Dstring_free(*curpath);
-        *curpath = final;
-    }
+    char pwd[1024];
+    char *env = getenv("PWD");
+    if (env && strcmp(env, "") != 0)
+        strcpy(pwd, env);
+    else
+        getcwd(pwd, 1024);
+    Dstring_concat(final, pwd);
+    if (final->value[final->size - 1] != '/')
+        Dstring_append(final, '/');
+    Dstring_concat_string(final, *curpath);
+    Dstring_free(*curpath);
+    *curpath = final;
 }
 
 static int path(struct Dstring **curpath, char *args[], int nb_args)
@@ -135,7 +137,12 @@ static int path(struct Dstring **curpath, char *args[], int nb_args)
         if (strcmp(input, "-") == 0)
         {
             char *oldpwd = getenv("OLDPWD");
-            char *pwd = getenv("PWD");
+            char pwd[1024];
+            char *env = getenv("PWD");
+            if (env && strcmp(env, "") != 0)
+                strcpy(pwd, env);
+            else
+                getcwd(pwd, 1024);
             if (oldpwd == NULL)
             {
                 fprintf(stderr, "cd: OLDPWD not set\n");
@@ -144,21 +151,18 @@ static int path(struct Dstring **curpath, char *args[], int nb_args)
             printf("%s\n", oldpwd);
             setenv("OLDPWD", pwd, 1);
             Dstring_concat(*curpath, oldpwd);
-
             if (chdir((*curpath)->value) != 0)
             { // Définir PWD
                 perror("cd");
                 Dstring_free(*curpath);
                 return 1;
             }
-
+            setenv("PWD", (*curpath)->value, 1);
             Dstring_free(*curpath);
             return 2;
         }
         else if (*input == '/')
-        {
             Dstring_concat(*curpath, input);
-        }
         else
         {
             if (strcmp(input, "..") == 0

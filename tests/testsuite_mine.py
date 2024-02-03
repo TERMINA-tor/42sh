@@ -69,6 +69,10 @@ def test_cd_subsubdir():
     file_path = path_cd + "test_cd_subsubdir.sh"
     return compare(run_ref(file_path), run_cmd(file_path))
 
-def test_multiple_cd():
-    file_path = path_cd + "test_multiple_cd.sh"
+def test_cd_no_pwd_minus():
+    file_path = path_cd + "test_cd_no_pwd_minus.sh"
+    return compare(run_ref(file_path), run_cmd(file_path))
+
+def test_cd_no_pwd():
+    file_path = path_cd + "test_cd_no_pwd.sh"
     return compare(run_ref(file_path), run_cmd(file_path))
