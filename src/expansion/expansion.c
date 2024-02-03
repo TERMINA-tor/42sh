@@ -181,13 +181,14 @@ static size_t handle_dollar(struct Dlist *list, char *src, struct Dstring *dst)
     char *dupe = src;
     int is_embeded = 0;
     dupe++;
+    int expand_dollar = 1;
     struct Dstring *parameter = Dstring_new();
     if (*dupe == '{')
     {
         is_embeded = 1;
         dupe++;
     }
-    if (*dupe == '$')
+    else if (*dupe == '$')
     {
         Dstring_append(parameter, '$');
         dupe++;
@@ -198,6 +199,17 @@ static size_t handle_dollar(struct Dlist *list, char *src, struct Dstring *dst)
         Dstring_append(parameter, *dupe);
         dupe++;
     }
+    if (!parameter->size)
+    {
+	    expand_dollar = 0;
+	    Dstring_append(parameter, '$');
+	    while (*dupe && *dupe != ' ')
+	    {
+		    Dstring_append(parameter, *dupe);
+		    dupe++;
+	    }
+	    Dstring_append(parameter, *dupe);
+    }
     if (*dupe == '}')
     {
         if (is_embeded)
@@ -206,14 +218,15 @@ static size_t handle_dollar(struct Dlist *list, char *src, struct Dstring *dst)
             dupe--;
     }
     else if (*dupe == '$')
-        dupe--;
-
+        dupe--; 
     Dstring_append(parameter, 0);
     char *tmp = getenv(parameter->value);
-    if (tmp)
+    if (tmp && expand_dollar)
         Dstring_concat(dst, tmp);
-    else
+    else if (expand_dollar)
         search_cache(parameter, list, dst, *dupe == '}');
+    else if (!expand_dollar)
+	    Dstring_concat(dst, parameter->value);
 
     Dstring_free(parameter);
     if (is_embeded)
@@ -248,18 +261,18 @@ static void append_local(struct Dlist *list, struct Dstring *str)
 static size_t handle_double_quote(struct Dlist *list, char *src,
                                   struct Dstring *dst)
 {
-    size_t len = 0;
+    size_t len = 1;
     int is_escaped = 0;
+    char least = 0;
     for (size_t i = 1; src[i] && (src[i] != '"' || (src[i] == '"' && is_escaped)); i++)
     {
         if (src[i] == '\\' && !is_escaped)
         {
             is_escaped = 1;
+	    len++;
         }
         else if (!is_escaped && src[i] == '$')
         {
-            append_local(list, dst);
-            dst = Dstring_new();
             size_t offset = handle_dollar(list, src + i, dst);
             len += offset;
             i += offset;
@@ -268,13 +281,14 @@ static size_t handle_double_quote(struct Dlist *list, char *src,
         {
             is_escaped = 0;
             len++;
-            if (src[i] == '\t')
-                Dstring_append(dst, '\\');
-            else
-                Dstring_append(dst, src[i]);
+            Dstring_append(dst, src[i]);
         }
+	least = src[i];
+	if (least == '"' && src[i + 1] == '"') // just added TODO
+		i++;
     }
-    len++;
+    if (least != 0 && src[len +1] == '"')
+	    len++;
     if (src[len] == 0)
     {
         fprintf(stderr, "./42sh: missing quote\n");

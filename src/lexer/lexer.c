@@ -185,8 +185,12 @@ static void handle_comment(struct lexer *lexer)
 // or set to 0 if the matching quote is found)
 static char handle_quotes(int *is_quoted, char least_quote, char curr)
 {
+    int save = *is_quoted;
     *is_quoted ^= (least_quote == curr) || least_quote == -1;
-    return *is_quoted ? curr : least_quote;
+    //return *is_quoted ? curr : least_quote;
+    if (save && is_quoted)
+	    return least_quote;
+    return curr;
 }
 
 // tells wether word is an assignement word or not
@@ -238,6 +242,13 @@ static int is_valid_comment_start(char curr, char previous, char is_quoted)
 {
     return curr == '#' && !is_quoted && !is_quote(previous) && (previous == -1 || is_delimitor(previous));
 }
+
+static void append_two_chars(struct Dstring *value, char curr, char tmp)
+{
+	Dstring_append(value, curr);
+	Dstring_append(value, tmp);
+}
+
 // gets the next word (in this case word = [:alphanum:])
 static void get_next(struct lexer *lexer, struct Dstring *value)
 {
@@ -262,10 +273,7 @@ static void get_next(struct lexer *lexer, struct Dstring *value)
         {
             char tmp = read_from_input(lexer);
             if (tmp != '\n' && (!is_quoted || (is_quoted && least_quote == '\"')))
-            {
-                Dstring_append(value, curr);
-                Dstring_append(value, tmp);
-            }
+		   append_two_chars(value, curr, tmp); 
         }
         else if ((curr == '\'' || curr == '\"'))
         {

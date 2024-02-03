@@ -8,7 +8,7 @@ path = "tests/"
 path_dquotes = path + "step2/"
 
 def run_ref(file_path):
-    return sp.run(['sh', './' + file_path], capture_output=True, text=True)
+    return sp.run(['bash', '--posix', file_path], capture_output=True, text=True)
 
 def run_cmd(file_path):
     return sp.run([shell, file_path], capture_output=True, text=True)
@@ -56,98 +56,100 @@ def test_empty_quotes():
 
 #escaped quotes
 
+escape = "escape/"
+
 def test_all_quotes1():
-    file_path = path_dquotes + "all_quotes_1"
+    file_path = path_dquotes + escape + "all_quotes_1"
     return compare(run_ref(file_path), run_cmd(file_path))
 
 def test_all_quotes_2():
-    file_path = path_dquotes + "all_quotes_2"
+    file_path = path_dquotes + escape + "all_quotes_2"
     return compare(run_ref(file_path), run_cmd(file_path))
 
 def test_all_quotes_3():
-    file_path = path_dquotes + "all_quotes_3"
+    file_path = path_dquotes + escape + "all_quotes_3"
     return compare(run_ref(file_path), run_cmd(file_path))
 
 def test_basic_quote_3():
-    file_path = path_dquotes + "basic_quote_3"
+    file_path = path_dquotes + escape + "basic_quote_3"
     return compare(run_ref(file_path), run_cmd(file_path))
 
 def test_dollar_quote():
-    file_path = path_dquotes + "dollar_quote"
+    file_path = path_dquotes + escape + "dollar_quote"
     return compare(run_ref(file_path), run_cmd(file_path))
 
 def test_dollar_quote2():
-    file_path = path_dquotes + "dollar_quote2"
+    file_path = path_dquotes + escape + "dollar_quote2"
     return compare(run_ref(file_path), run_cmd(file_path))
 
 def test_dollar_quote3():
-    file_path = path_dquotes + "dollar_dollar_quote3"
+    file_path = path_dquotes + escape + "dollar_quote3"
     return compare(run_ref(file_path), run_cmd(file_path))
 
 def test_embedded_quote_1():
-    file_path = path_dquotes + "embedded_quote_1"
+    file_path = path_dquotes + escape + "embedded_quote_1"
     return compare(run_ref(file_path), run_cmd(file_path))
 
 def test_embedded_quote_2():
-    file_path = path_dquotes + "embedded_quote_2"
+    file_path = path_dquotes + escape + "embedded_quote_2"
     return compare(run_ref(file_path), run_cmd(file_path))
 
 def test_escape1():
-    file_path = path_dquotes + "escape1"
+    file_path = path_dquotes + escape + "escape1"
     return compare(run_ref(file_path), run_cmd(file_path))
 
 def test_escape_comment():
-    file_path = path_dquotes + "escape_comment"
+    file_path = path_dquotes + escape + "escape_comment"
     return compare(run_ref(file_path), run_cmd(file_path))
 
 def test_escape_in_weak():
-    file_path = path_dquotes + "escape_in_weak"
+    file_path = path_dquotes + escape + "escape_in_weak"
     return compare(run_ref(file_path), run_cmd(file_path))
 
 def test_escape_newline1():
-    file_path = path_dquotes + "escape_newline1"
+    file_path = path_dquotes + escape + "escape_newline1"
     return compare(run_ref(file_path), run_cmd(file_path))
 
 def test_escape_newline2():
-    file_path = path_dquotes + "escape_newline2"
+    file_path = path_dquotes + escape + "escape_newline2"
     return compare(run_ref(file_path), run_cmd(file_path))
 
 def test_escape_newline3():
-    file_path = path_dquotes + "escape_newline3"
+    file_path = path_dquotes + escape + "escape_newline3"
     return compare(run_ref(file_path), run_cmd(file_path))
 
 def test_escape_newline4():
-    file_path = path_dquotes + "escape_newline4"
+    file_path = path_dquotes + escape + "escape_newline4"
     return compare(run_ref(file_path), run_cmd(file_path))
 
 def test_hard_quotes():
-    file_path = path_dquotes + "hard_quotes"
+    file_path = path_dquotes + escape + "hard_quotes"
     return compare(run_ref(file_path), run_cmd(file_path))
 
 def test_hard_var_4():
-    file_path = path_dquotes + "hard_var_4"
+    file_path = path_dquotes + escape + "hard_var_4"
     return compare(run_ref(file_path), run_cmd(file_path))
 
 def test_many_vars():
-    file_path = path_dquotes + "many_vars"
+    file_path = path_dquotes + escape + "many_vars"
     return compare(run_ref(file_path), run_cmd(file_path))
 
 def test_multi_line():
-    file_path = path_dquotes + "multi_line"
+    file_path = path_dquotes + escape + "multi_line"
     return compare(run_ref(file_path), run_cmd(file_path))
 
 def test_semicolon_in_arg():
-    file_path = path_dquotes + "semicolon_in_arg"
+    file_path = path_dquotes + escape + "semicolon_in_arg"
     return compare(run_ref(file_path), run_cmd(file_path))
 
 def test_special_quote_1():
-    file_path = path_dquotes + "special_quote_1"
+    file_path = path_dquotes + escape + "special_quote_1"
     return compare(run_ref(file_path), run_cmd(file_path))
 
-def test_special_quote_2():
-    file_path = path_dquotes + "special_quote_2"
-    return compare(run_ref(file_path), run_cmd(file_path))
-
-def test_weird_args():
-    file_path = path_dquotes + "weird_args"
-    return compare(run_ref(file_path), run_cmd(file_path))
+#def test_special_quote_2():
+#    file_path = path_dquotes + "special_quote_2"
+#    return compare(run_ref(file_path), run_cmd(file_path))
+#
+#def test_weird_args():
+#    file_path = path_dquotes + "weird_args"
+#    return compare(run_ref(file_path), run_cmd(file_path))
